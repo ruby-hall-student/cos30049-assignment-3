@@ -2,31 +2,9 @@ import pandas as pd
 import re
 from spellchecker import SpellChecker
 
-def extractFeatures(text):
-    textLength = len(text)
-    numCapitalLetters = len(re.findall("[A-Z]", text))
-    numSpecialCharacters = len(re.findall("[^A-Za-z0-9 ]", text))
-    numDigits = len(re.findall("[0-9]", text))
-
-    urlPattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
-    numURLs = len(re.findall(urlPattern, text))
-
-    spelling = SpellChecker()
-    numMisspelledWords = len(spelling.unknown(text.split()))
-
-
-
-    #test print statements
-    print(textLength)
-    print(numCapitalLetters)
-    print(numURLs)
-    print(numMisspelledWords)
-
 #a class used to extract features from inputs
-class InputExtracter:
-    spelling = SpellChecker()
-    spamWordsPattern = ""
-
+class InputExtractor:
+    #set up variables that will be used repeatedly when extracting features
     def __init__(self):
         spamWords = []
 
@@ -39,16 +17,44 @@ class InputExtracter:
         #get a regex pattern to use to find num occurrences of all suspicious words
         self.spamWordsPattern = '|'.join(spamWords)
 
+        #regex pattern to find URLs
+        self.urlPattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
+        
+        #get spellchecker object to find misspelled words
+        self.spelling = SpellChecker()
 
-#stores a dataframe of inputs for the ML model
-class ModelInput:
-    #a list of inputs for the ML model, ordered in the same way as SpamEmailsScaledAllFeatures
-    data = pd.DataFrame()
-
-    def __init__(self, text):
-        #data = self.extractFeatures(text)
-        extractFeatures(text)
-
+        #array of the words most correlated with spam emails
+        self.correlatedSpamWords = ["settings", "privacy", "cnn", "video", "crime"]
     
+    #returns a dataframe of all the features of the email text, unscaled (for data visualisation purposes)
+    def extractFeatures(self, subject, body):
+        #create an empty dictionary to fill with extracted features
+        data = {}
 
-modelInput = ModelInput("Hello https://hello.com mispelled wurds")
+        text = subject + body
+
+        data["textLength"] = len(text)
+        data["numCapitalLetters"] = len(re.findall("[A-Z]", text))
+        data["numSpecialCharacters"] = len(re.findall("[^A-Za-z0-9 ]", text))
+        data["numDigits"] = len(re.findall("[0-9]", text))
+
+        data["numURLs"] = len(re.findall(self.urlPattern, text))
+
+        data["numMisspelledWords"] = len(self.spelling.unknown(text.split()))
+
+        data["numSuspiciousWords"] = len(re.findall(self.spamWordsPattern, text))
+
+        for word in self.correlatedSpamWords:
+            data["numOfWord" + word] = len(re.findall(word, text))
+        
+        #create dataframe from dictionary
+        dataDF = pd.DataFrame(data, index=[0])
+
+        #used for testing
+        #print(dataDF)
+
+        return dataDF
+
+#testing   
+#inputExtractor = InputExtractor()
+#inputExtractor.extractFeatures("Hello 15 @@ hello.com YYY mispelled wurds money money investment now quick cnn")
