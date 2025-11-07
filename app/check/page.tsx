@@ -71,7 +71,9 @@ export default function CheckPage() {
       if (activeTab === "paste") {
         textToAnalyze = textInput
       } else if (file) {
-        // Read file content
+        // Read file content 
+        // #####Replace with maybe a switch statement######### 
+        // #####to check file type############################
         const reader = new FileReader()
         textToAnalyze = await new Promise<string>((resolve, reject) => {
           reader.onload = (e) => resolve(e.target?.result as string)
