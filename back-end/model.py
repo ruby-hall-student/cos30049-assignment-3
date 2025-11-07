@@ -1,13 +1,13 @@
 import pandas as pd
 import joblib
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
 class SpamModel:
     def __init__(self):
+        #using a logistic regression model so that we can display the confidence score
         self.model = LogisticRegression()
-    
+    #should not have to run this unless the data in SpamEmailsScaledAllFeatures.csv is updated
     def train(self):
         #read in processed dataset
         spamDF = pd.read_csv("../data/SpamEmailsScaledAllFeatures.csv")
@@ -17,17 +17,21 @@ class SpamModel:
         #store in y the target variable (the label of whether it is spam/ham)
         y = spamDF["label"]
 
-        # #perform data splitting
-        # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
         #train the model
         self.model.fit(X, y)
     
         #save the model
-        joblib.dump(self.load, "log_reg_model.pkl")
+        joblib.dump(self.model, "spam_model.pkl")
     
     def predict(self, X):
-        model = joblib.load("log_reg_model.pkl")
+        model = joblib.load("spam_model.pkl")
+        #return the predicted value
+        return model.predict(X)
+
+#train model
+if __name__ == "__main__":
+    model = SpamModel()
+    model.train()
 
 
 
