@@ -14,7 +14,7 @@ export default function HomePage() {
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Detect Spam & Malware Instantly</h1>
             <p className="text-lg text-muted-foreground mb-8 text-pretty">
-              Analyze emails and messages for suspicious patterns. All processing happens locally in your browser—no
+              Analyze emails and messages for suspicious patterns. All processing happens locally in your browser,no
               data ever leaves your device.
             </p>
 
