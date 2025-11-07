@@ -7,12 +7,16 @@ from pydantic import BaseModel, Field
 from logger import logger
 
 #defines a pydantic model for input to predict spam
-class PredictedEmail(BaseModel):
+class PredictionInput(BaseModel):
     subject: str
     body: str
-    features: dict | None = None #the features extracted from the email - used for prediction and visualisations
-    label: bool | None = None #label of whether it is ham/spam (spam = true)
-    probability: float | None = None #the probability that the email is spam (1.0 = certain it is spam)
+
+class PredictionOutput(BaseModel):
+    subject: str
+    body: str
+    features: dict #the features extracted from the email - used for prediction and visualisations
+    label: bool #label of whether it is ham/spam (spam = true)
+    probability: float = Field(..., ge=0, le=1) #the probability that the email is spam (1.0 = certain it is spam)
 
 app = FastAPI()
 
@@ -35,26 +39,31 @@ async def root():
     return {"message": "This is a test message"}
 
 #predict whether an email is spam/ham - input requires subject and body text as string
+#returns predicted email object
 @app.post("/predict/")
-def predict_input(spamInput: PredictedEmail) -> PredictedEmail:
-    #extract features into dataframe from subject and body text
-    input_features = inputExtractor.extractFeatures(spamInput.subject, spamInput.body)
+def predict_input(spamInput: PredictionInput) -> PredictionOutput:
+    try:
+        #extract features into dataframe from subject and body text
+        input_features = inputExtractor.extractFeatures(spamInput.subject, spamInput.body)
 
-    #store extracted features - for data visualisations
-    spamInput.features = input_features.iloc[0].to_dict()
+        prediction, prediction_probability = model.predict(input_features)
 
-    prediction, prediction_probability = model.predict(input_features)
+        #used for testing
+        logger.info("Probability that it is spam: " + str(prediction_probability[0][1]))
 
-    #store label of whether it is spam/ham
-    spamInput.label = bool(prediction[0])
+        #prepare an output object
+        spamOutput = PredictionOutput(
+            subject = spamInput.subject,
+            body = spamInput.body,
+            features = input_features.iloc[0].to_dict(),
+            label = bool(prediction[0]),
+            probability = round(float(prediction_probability[0][1]), 3)
+        )
 
-    #store how likely the email is spam, rounded to 3 decimal places
-    spamInput.probability = round(float(prediction_probability[0][0]), 3)
-
-    #used for testing
-    #logger.info("Probability that it is spam: " + str(prediction_probability[0][1]))
-
-    return spamInput
+        return spamOutput
+    except Exception as e:
+        logger.error("Error trying to predict: " + str(e))
+        raise HTTPException(status_code=500, detail="Internal error: " + str(e))
 
 if __name__ == "__main__":
     import uvicorn
