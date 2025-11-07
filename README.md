@@ -71,4 +71,3 @@ npm start
 - Real-time analysis in the browser (no data uploaded)
 - Feature importance visualization
 - Confusion matrix display
-  > > > > > > > Incoming (Background Agent changes)
