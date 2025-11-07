@@ -2,26 +2,29 @@
 
 import type React from "react"
 
+const axios = require('axios').default;
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Upload, FileText, Loader2 } from "lucide-react"
-import { analyzeText } from "@/lib/analyzer"
+//import { analyzeText } from "@/lib/analyzer"
 import { useAnalysis } from "@/lib/analysis-context"
 
 export default function CheckPage() {
   const router = useRouter()
   const { setResult } = useAnalysis()
   const [activeTab, setActiveTab] = useState("paste")
-  const [textInput, setTextInput] = useState("")
+  const [bodyInput, setBodyInput] = useState("")
+  const [subjectInput, setSubjectInput] = useState("")
   const [file, setFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState("")
 
-  const hasInput = textInput.trim().length > 0 || file !== null
+  const hasInput = (bodyInput.trim().length > 0 && subjectInput.trim().length > 0)|| file !== null
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -66,22 +69,25 @@ export default function CheckPage() {
     setError("")
 
     try {
-      let textToAnalyze = ""
+      let subjectToAnalyse = ""
+      let bodyToAnalyse = ""
 
       if (activeTab === "paste") {
-        textToAnalyze = textInput
-      } else if (file) {
-        // Read file content
-        const reader = new FileReader()
-        textToAnalyze = await new Promise<string>((resolve, reject) => {
-          reader.onload = (e) => resolve(e.target?.result as string)
-          reader.onerror = () => reject(new Error("Failed to read file"))
-          reader.readAsText(file)
-        })
-      }
+        subjectToAnalyse = subjectInput
+        bodyToAnalyse = bodyInput
+      } 
+      // else if (file) {
+      //   // Read file content
+      //   const reader = new FileReader()
+      //   textToAnalyze = await new Promise<string>((resolve, reject) => {
+      //     reader.onload = (e) => resolve(e.target?.result as string)
+      //     reader.onerror = () => reject(new Error("Failed to read file"))
+      //     reader.readAsText(file)
+      //   })
+      // }
 
-      if (!textToAnalyze.trim()) {
-        setError("Please provide text to analyze")
+      if (!(subjectToAnalyse.trim() && bodyToAnalyse.trim())) {
+        setError("Please provide text for subject and body of email to analyse.")
         setIsAnalyzing(false)
         return
       }
@@ -93,7 +99,16 @@ export default function CheckPage() {
 
       // Perform analysis
       await new Promise((resolve) => setTimeout(resolve, 1500))
-      const result = analyzeText(textToAnalyze)
+      //const result = analyzeText(textToAnalyze)
+
+      const result = axios({
+        method: "post", 
+        url: "http://localhost:8000/predict/", 
+        data: {
+          subject: subjectToAnalyse, 
+          body: bodyToAnalyse
+        }
+      })
 
       clearInterval(progressInterval)
       setProgress(100)
@@ -102,6 +117,7 @@ export default function CheckPage() {
       setResult(result)
       await new Promise((resolve) => setTimeout(resolve, 300))
       router.push("/results")
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed")
       setIsAnalyzing(false)
@@ -171,17 +187,24 @@ export default function CheckPage() {
               <label htmlFor="text-input" className="sr-only">
                 Paste your email or message content
               </label>
-              <textarea
-                id="text-input"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Paste your email or message content here..."
-                className="w-full min-h-[300px] p-4 border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
-                aria-describedby="text-input-help"
-              />
-              <p id="text-input-help" className="text-sm text-muted-foreground mt-2">
-                {textInput.length} characters • {textInput.split(/\s+/).filter(Boolean).length} words
-              </p>
+              <div id="text-input">
+                <textarea
+                  value={subjectInput}
+                  onChange={(e) => setSubjectInput(e.target.value)}
+                  placeholder="Paste subject line here..."
+                  className="w-full min-h-[50px] p-4 border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
+                />
+                <textarea
+                  value={bodyInput}
+                  onChange={(e) => setBodyInput(e.target.value)}
+                  placeholder="Paste the body of your email or message here..."
+                  className="w-full min-h-[300px] p-4 border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
+                  aria-describedby="text-input-help"
+                />
+                <p id="text-input-help" className="text-sm text-muted-foreground mt-2">
+                  {bodyInput.length + subjectInput.length} characters • {bodyInput.split(/\s+/).filter(Boolean).length + subjectInput.split(/\s+/).filter(Boolean).length} words
+                </p>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
