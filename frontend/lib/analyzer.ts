@@ -23,8 +23,8 @@ export interface AnalysisResult {
   probability: number
   riskLevel: "low" | "medium" | "high" | "severe"
 
-  //subjectHighlightedText: Array<{ text: string; isHighlighted: boolean;}>
-  //bodyHighlightedText: Array<{ text: string; isHighlighted: boolean;}>
+  subjectHighlightedText: Array<{ text: string; isHighlighted: boolean;}>
+  bodyHighlightedText: Array<{ text: string; isHighlighted: boolean;}>
 //   // originalText: string
 //   // timestamp: string
 //   // score: number
@@ -73,6 +73,7 @@ export function analyseText(text: any): AnalysisResult {
   //store the risk level according to the probability that the email is spam
   const riskLevel: "low" | "medium" | "high" | "severe" =
   text.probability < 0.25 ? "low" :  text.probability < 0.5 ? "medium" : text.probability < 0.75 ? "high" : "severe"
+
   return {
     subject: text.subject,
     body: text.body,
@@ -80,8 +81,8 @@ export function analyseText(text: any): AnalysisResult {
     label: text.label,
     probability: text.probability,
     riskLevel: riskLevel,
-    //subjectHighlightedText: text.subjectHighlightedText,
-    //bodyHighlightedText: text.bodyHighlightedText
+    subjectHighlightedText: text.subjectSuspiciousText,
+    bodyHighlightedText: text.bodySuspiciousText
   }
 }
 

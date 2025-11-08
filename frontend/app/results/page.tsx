@@ -334,13 +334,23 @@ export default function ResultsPage() {
               </AccordionItem>
             </Accordion>
           </div>
-        </div>
-
+        </div> */}
         <div className="lg:col-span-1">
           <Card className="p-6 sticky top-20">
             <h2 className="text-xl font-bold mb-4">Original Content</h2>
+            <div className="bg-muted/50 rounded-lg p-4 max-h-[100px] overflow-y-auto text-sm leading-relaxed">
+              {result.subjectHighlightedText.map((segment, i) =>
+                segment.isHighlighted ? (
+                  <mark key={i} className="bg-yellow-200 px-1 rounded">
+                    {segment.text}
+                  </mark>
+                ) : (
+                  <span key={i}>{segment.text}</span>
+                ),
+              )}
+            </div>
             <div className="bg-muted/50 rounded-lg p-4 max-h-[600px] overflow-y-auto text-sm leading-relaxed">
-              {result.highlightedText.map((segment, i) =>
+              {result.bodyHighlightedText.map((segment, i) =>
                 segment.isHighlighted ? (
                   <mark key={i} className="bg-yellow-200 px-1 rounded">
                     {segment.text}
@@ -357,8 +367,8 @@ export default function ResultsPage() {
             </div>
           </Card>
         </div>
+        {/*
       </div>
-
       <div className="hidden print-only">
         <h1 className="text-2xl font-bold mb-2">Spam & Malware Analysis Report</h1>
         <p className="text-sm text-muted-foreground mb-4">Generated on {new Date(result.timestamp).toLocaleString()}</p>

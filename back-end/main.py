@@ -17,7 +17,7 @@ class PredictionOutput(BaseModel):
     features: dict #the features extracted from the email - used for prediction and visualisations
     label: bool #label of whether it is ham/spam (spam = true)
     probability: float = Field(..., ge=0, le=1) #the probability that the email is spam (1.0 = certain it is spam)
-    subjectSupiciousText: list[dict]
+    subjectSuspiciousText: list[dict]
     bodySuspiciousText: list[dict]
 
 app = FastAPI()
@@ -63,7 +63,7 @@ def predict_input(spamInput: PredictionInput) -> PredictionOutput:
             features = input_features.iloc[0].to_dict(),
             label = bool(prediction[0]),
             probability = round(float(prediction_probability[0][1]), 3),
-            subjectSupiciousText=subjectHighlights,
+            subjectSuspiciousText=subjectHighlights,
             bodySuspiciousText=bodyHighlights
         )
 
