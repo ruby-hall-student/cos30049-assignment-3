@@ -11,9 +11,9 @@ export function Navigation() {
   const { hasResults } = useAnalysis()
 
   const navLinks = [
-    { href: "/check", label: "Check Now" },
-    { href: "/results", label: "Results", disabled: !hasResults },
+    // { href: "/check", label: "Check Now" },
     { href: "/learn", label: "Learn" },
+    { href: "/results", label: "Results", disabled: !hasResults },
   ]
 
   return (
@@ -41,11 +41,10 @@ export function Navigation() {
                 </Link>
               </li>
             ))}
+            <Button asChild size="sm">
+              <Link href="/check">Check Now</Link>
+            </Button>
           </ul>
-
-          <Button asChild size="sm">
-            <Link href="/check">Check Now</Link>
-          </Button>
         </div>
       </div>
     </nav>
