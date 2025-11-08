@@ -2,12 +2,10 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import * as d3 from "d3"
-import cloud from "d3-cloud"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, ArrowRight } from "lucide-react"
-
 
 // ============================================================================
 // DATA SECTION
@@ -410,125 +408,6 @@ function ScatterPlot({ data, highlightFeature }) {
   )
 }
 
-//##############################
-//###############################
-//Word Cloud#####################
-function WordCloud() {
-  const svgRef = useRef(null)
-  const tooltipRef = useRef(null)
-  const [words, setWords] = useState([])
-
-  useEffect(() => {
-    // Load the CSV
-    fetch("/data/spamWordFrequencies.csv")
-      .then((res) => res.text())
-      .then((text) => {
-        const data = d3.csvParse(text)
-        const sliced = data.slice(0, 52)
-        setWords(sliced.map((d) => ({ text: d.word, size: +d.count })))
-      })
-      .catch((err) => console.error("Failed to load CSV:", err))
-  }, [])
-
-  useEffect(() => {
-    if (!svgRef.current || !words.length) return
-
-    const width = 450
-    const height = 450
-    const svg = d3.select(svgRef.current)
-    svg.selectAll("*").remove()
-
-    //tooltip box
-    const tooltip = d3
-      .select(tooltipRef.current)
-      .style("position", "absolute")
-      .style("padding", "6px 10px")
-      .style("background", "rgba(0,0,0,0.8)")
-      .style("color", "#fff")
-      .style("border-radius", "8px")
-      .style("pointer-events", "none")
-      .style("font-size", "0.875rem")
-      .style("opacity", 0)
-      .style("transition", "opacity 0.2s ease")
-
-    const color = d3.scaleSequential(d3.interpolateCool).domain([0, words.length])
-    const sizeScale = d3
-      .scaleSqrt()
-      .domain([0, d3.max(words, (d) => d.size)])
-      .range([10, 80])
-
-    const layout = cloud()
-      .size([width, height])
-      .words(
-        words.map((d) => ({ 
-          text: d.text, 
-          size: sizeScale(d.size), 
-          count: d.size, 
-        })))
-      .padding(5)
-      .rotate(() => (Math.random() > 0.5 ? 0 : 90))
-      .font("Impact")
-      .fontSize((d) => d.size)
-      .on("end", draw)
-
-    layout.start()
-
-    function draw(words) {
-      const group = svg
-        .append("g")
-        .attr("transform", `translate(${width / 2},${height / 2})`)
-        
-        group
-        .selectAll("text")
-        .data(words)
-        .enter()
-        .append("text")
-        .style("font-size", (d) => `${d.size}px`)
-        .style("font-family", "Impact")
-        .style("fill", (_, i) => color(i))
-        .attr("text-anchor", "middle")
-        .attr("transform", (d) => `translate(${d.x},${d.y})rotate(${d.rotate})`)
-        .text((d) => d.text)
-        //tool tip mouse stuff
-        .on("mouseover", (event, d) => { 
-          tooltip
-            .style("opacity", 1)
-            .html(
-              `<strong>${d.text}</strong><br>${d.count.toLocaleString()} occurrences`
-            )
-        })
-        .on("mousemove", (event) => {
-          const [x, y] = d3.pointer(event)
-          tooltip
-            .style("left", `${x + 20}px`)
-            .style("top", `${y}px`)
-          })
-        .on("mouseleave", () => {
-          tooltip.style("opacity", 0)
-        })
-      }
-    }, [words])
-
-  return (
-    <Card className="w-full relative">
-      <CardContent className="p-4 md:p-6">
-        <div className="mb-4">
-          <h3 className="text-xl font-semibold">Most Frequent Words in Spam Emails</h3>
-          <p className="text-sm text-gray-600">
-            The larger a word appears, the more frequently it occurs across the dataset. Hover over words to see counts.
-          </p>
-        </div>
-        <div className="relative w-full flex justify-center">
-          <svg ref={svgRef} width="450" height="450" />
-          <div ref={tooltipRef} className="absolute z-50 pointer-events-none"></div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-//######################################
-//######################################
-
 // ============================================================================
 // MAIN PAGE COMPONENT
 // ============================================================================
@@ -667,10 +546,6 @@ export default function LearnPage() {
 
       <section id="viz-scatter" className="mb-8">
         <ScatterPlot data={SCATTER_DATA} highlightFeature={highlightFeature} />
-      </section>
-
-      <section id="viz-wordcloud" className="mb-8">
-        <WordCloud />
       </section>
 
       <section className="space-y-3 mb-8">
