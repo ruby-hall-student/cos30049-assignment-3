@@ -35,7 +35,7 @@ class InputExtractor:
 
         #get the frequency of specific highly suspicious words
         for word in self.correlatedSpamWords:
-            data["numOfWord" + word] = len(re.findall(word, text))
+            data["numOfWord" + word] = len(re.findall(word, text, flags=re.IGNORECASE))
         
         #get number of capital letters
         data["numCapitalLetters"] = len(re.findall("[A-Z]", text))
@@ -50,7 +50,7 @@ class InputExtractor:
         data["numSpecialCharacters"] = len(re.findall("[^A-Za-z0-9 ]", text))
 
         #get number of suspicious words
-        data["numSuspiciousWords"] = len(re.findall(self.spamWordsPattern, text))
+        data["numSuspiciousWords"] = len(re.findall(self.spamWordsPattern, text, flags=re.IGNORECASE))
 
         #get number of URLs
         data["numURLs"] = len(re.findall(self.urlPattern, text))
@@ -71,7 +71,7 @@ class InputExtractor:
         segments = []
         lastIndex = 0
 
-        matches = re.finditer(self.spamWordsPattern, text)
+        matches = re.finditer(self.spamWordsPattern, text, flags=re.IGNORECASE)
         for match in matches:
             #add the not highlighted text before a match
             if(match.start() > lastIndex):
