@@ -33,19 +33,30 @@ class InputExtractor:
 
         text = subject + body
 
-        data["textLength"] = len(text)
-        data["numCapitalLetters"] = len(re.findall("[A-Z]", text))
-        data["numSpecialCharacters"] = len(re.findall("[^A-Za-z0-9 ]", text))
-        data["numDigits"] = len(re.findall("[0-9]", text))
-
-        data["numURLs"] = len(re.findall(self.urlPattern, text))
-
-        data["numMisspelledWords"] = len(self.spelling.unknown(text.split()))
-
-        data["numSuspiciousWords"] = len(re.findall(self.spamWordsPattern, text))
-
+        #get the frequency of specific highly suspicious words
         for word in self.correlatedSpamWords:
             data["numOfWord" + word] = len(re.findall(word, text))
+        
+        #get number of capital letters
+        data["numCapitalLetters"] = len(re.findall("[A-Z]", text))
+
+        #get number of digits
+        data["numDigits"] = len(re.findall("[0-9]", text))
+
+        #get number of misspelled words
+        data["numMisspelledWords"] = len(self.spelling.unknown(text.split()))
+
+        #get number of special characters
+        data["numSpecialCharacters"] = len(re.findall("[^A-Za-z0-9 ]", text))
+
+        #get number of suspicious words
+        data["numSuspiciousWords"] = len(re.findall(self.spamWordsPattern, text))
+
+        #get number of URLs
+        data["numURLs"] = len(re.findall(self.urlPattern, text))
+
+        #get length of text (number of characters)
+        data["textLength"] = len(text)
         
         #create dataframe from dictionary
         dataDF = pd.DataFrame(data, index=[0])
