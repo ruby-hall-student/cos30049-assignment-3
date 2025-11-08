@@ -111,8 +111,8 @@ export default function ResultsPage() {
         <div className="lg:col-span-2 space-y-4">
             <h2 className="text-3xl font-bold text-center">Spam Features</h2>
             <SpamBarChart 
-              labels={["Text Length", "No. Digits", "No. Capital Letters", "No. Special Characters", "No. URLs", "No. Misspelled Words", "No. Suspicious Words"]}
-              spamFeatureData={[result.features.textLength, result.features.numDigits, result.features.numCapitalLetters, result.features.numSpecialCharacters, result.features.numURLs, result.features.numMisspelledWords, result.features.numSuspiciousWords]}
+              labels={["No. Digits", "No. Capital Letters", "No. Special Characters", "No. URLs", "No. Misspelled Words", "No. Suspicious Words"]}
+              spamFeatureData={[result.features.numDigits, result.features.numCapitalLetters, result.features.numSpecialCharacters, result.features.numURLs, result.features.numMisspelledWords, result.features.numSuspiciousWords]}
               colour={config.rgbColor}
             ></SpamBarChart>
         </div>
