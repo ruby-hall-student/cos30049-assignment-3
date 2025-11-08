@@ -43,7 +43,7 @@ async def root():
 #predict whether an email is spam/ham - input requires subject and body text as string
 #returns predicted email object
 @app.post("/predict/")
-def predict_input(spamInput: PredictionInput) -> PredictionOutput:
+async def predict_input(spamInput: PredictionInput) -> PredictionOutput:
     try:
         #extract features into dataframe from subject and body text
         input_features = inputExtractor.extractFeatures(spamInput.subject, spamInput.body)

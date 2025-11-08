@@ -9,11 +9,68 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Upload, FileText, Loader2 } from "lucide-react"
 import { analyseText} from "@/lib/analyzer"
 import { useAnalysis } from "@/lib/analysis-context"
+import qp from "quoted-printable";
+
+//parse the .eml files to split out the subject and body text to pass into the model.
+async function parseEmlFile(file: File) {
+  const text = await file.text();
+
+  // Split headers and raw body
+  const headerEndIdx = text.indexOf("\r\n\r\n");
+  const rawHeaders = text.slice(0, headerEndIdx);
+  let rawBody = text.slice(headerEndIdx + 4);
+
+  // Parse main headers
+  const headers: Record<string, string> = {};
+  rawHeaders.split(/\r?\n/).forEach((line) => {
+    const idx = line.indexOf(":");
+    if (idx > 0) {
+      const name = line.slice(0, idx).trim().toLowerCase();
+      const value = line.slice(idx + 1).trim();
+      headers[name] = value;
+    }
+  });
+
+  let bodyText = rawBody;
+
+  // Detect multipart boundary
+  const boundaryMatch = rawHeaders.match(/boundary="([^"]+)"/i);
+  if (boundaryMatch) {
+    const boundary = boundaryMatch[1];
+    const parts = rawBody.split(`--${boundary}`);
+
+    // Prefer text/plain part
+    let plainPart = parts.find((p) => /Content-Type:\s*text\/plain/i.test(p));
+    if (!plainPart) plainPart = parts[1] || "";
+
+    // Remove headers in this part
+    const partHeaderEnd = plainPart.indexOf("\r\n\r\n");
+    if (partHeaderEnd >= 0) {
+      bodyText = plainPart.slice(partHeaderEnd + 4).trim();
+    } else {
+      bodyText = plainPart.trim();
+    }
+
+    // Decode quoted-printable if present
+    if (/Content-Transfer-Encoding:\s*quoted-printable/i.test(plainPart)) {
+      bodyText = qp.decode(bodyText);
+    }
+
+    // Strip leftover HTML tags
+    bodyText = bodyText.replace(/<[^>]+>/g, "").trim();
+  }
+
+  return {
+    subject: headers["subject"] || "",
+    body: bodyText,
+  };
+}
+
 
 export default function CheckPage() {
   const router = useRouter()
   const {setResult} = useAnalysis()
-  const {result} = useAnalysis()
+  //const {result} = useAnalysis()
   const [activeTab, setActiveTab] = useState("paste")
   const [bodyInput, setBodyInput] = useState("")
   const [subjectInput, setSubjectInput] = useState("")
@@ -69,22 +126,51 @@ export default function CheckPage() {
     let subjectToAnalyse = ""
     let bodyToAnalyse = ""
 
+    //try { ############
+    //#################
     if(activeTab == "paste"){
       subjectToAnalyse = subjectInput
       bodyToAnalyse = bodyInput
     }
-    else if (activeTab == "upload") {
-      subjectToAnalyse = ""
-      bodyToAnalyse = ""
-      //^ set to empty strings - but should be replaced with actual code to read in file 
+    else if (activeTab == "upload" && file) {
+      //read in the file
+      const isEml = file.name.endsWith(".eml")
+      const isTxt = file.name.endsWith(".txt")
+
+      if (isEml) {
+        try {
+          const parsed = await parseEmlFile(file)
+          subjectToAnalyse = parsed.subject
+          bodyToAnalyse = parsed.body
+        } catch (err) {
+          console.error("EML Parse Error:", err);
+          setError("Failed to parse .eml file")
+          setIsAnalyzing(false)
+          return
+        }
+      } else if (isTxt) {
+        //fallback for plain text files
+        const text = await file.text()
+        subjectToAnalyse = file.name
+        bodyToAnalyse = text
+      } else {
+        setError("Unsupported file type. Please upload .eml or .txt files.")
+        setIsAnalyzing(false)
+        return
+      }
+      } else {
+      //###################################
+      setError("Please upload or paste your email content");
+      setIsAnalyzing(false);
+      return;
     }
-    else {
+    /*else {
       //error - wrong active tab
       setIsAnalyzing(false)
       setProgress(0)
       setError("User is on incorrect tab to submit input.")
       return
-    }
+    }*/
 
     //double check that something has actually been inputted
     if(subjectToAnalyse.trim() == "" || bodyToAnalyse.trim() == ""){
@@ -96,7 +182,6 @@ export default function CheckPage() {
     
     //start a timeout so that the page can load whilst awaiting results
     await new Promise((resolve) => setTimeout(resolve, 1500))
-
     //Simulate progress
       const progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + 10, 90))
@@ -104,14 +189,16 @@ export default function CheckPage() {
     
     try {
       //retrieve prediction from API endpoint - output is of form PredictionOutput (defined in main.py)
-      const prediction = await axios({
-          method: "post", 
-          url: "http://localhost:8000/predict/", 
-          data: {
-            subject: subjectToAnalyse, 
-            body: bodyToAnalyse
-          }
-      })
+      const prediction = await axios.post(
+        "/api/predict/", 
+        {
+          subject: subjectToAnalyse,
+          body: bodyToAnalyse
+        }/*, 
+        {
+        headers: { "Content-Type": "application/json" }
+        }*/
+      );
 
       clearInterval(progressInterval)
       setProgress(100)
