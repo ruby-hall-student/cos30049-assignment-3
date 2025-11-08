@@ -21,6 +21,7 @@ export interface AnalysisResult {
 
   label: boolean
   probability: number
+  riskLevel: "low" | "medium" | "high" | "severe"
 
 //   // originalText: string
 //   // timestamp: string
@@ -67,12 +68,16 @@ export interface AnalysisResult {
 }
 
 export function analyseText(text: any): AnalysisResult {
+  //store the risk level according to the probability that the email is spam
+  const riskLevel: "low" | "medium" | "high" | "severe" =
+  text.probability < 0.25 ? "low" :  text.probability < 0.5 ? "medium" : text.probability < 0.75 ? "high" : "severe"
   return {
     subject: text.subject,
     body: text.body,
     features: text.features,
     label: text.label,
-    probability: text.probability
+    probability: text.probability,
+    riskLevel: riskLevel
   }
 }
 
