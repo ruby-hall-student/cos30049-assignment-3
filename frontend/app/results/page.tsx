@@ -36,24 +36,24 @@ export default function ResultsPage() {
   // const config = riskConfig[result.riskLevel]
   // const RiskIcon = config.icon
 
-  const handleDownload = (format: "csv" | "json") => {
-    const content = format === "csv" ? exportToCSV(result) : exportToJSON(result)
-    const blob = new Blob([content], { type: format === "csv" ? "text/csv" : "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `spam-analysis-${new Date().toISOString().split("T")[0]}.${format}`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+  // const handleDownload = (format: "csv" | "json") => {
+  //   const content = format === "csv" ? exportToCSV(result) : exportToJSON(result)
+  //   const blob = new Blob([content], { type: format === "csv" ? "text/csv" : "application/json" })
+  //   const url = URL.createObjectURL(blob)
+  //   const a = document.createElement("a")
+  //   a.href = url
+  //   a.download = `spam-analysis-${new Date().toISOString().split("T")[0]}.${format}`
+  //   a.click()
+  //   URL.revokeObjectURL(url)
+  // }
 
-  const handlePrint = () => {
-    window.print()
-  }
+  // const handlePrint = () => {
+  //   window.print()
+  // }
 
   return (
     <div>
-      <p>Spam? {result.label} Probability: {result.probability}</p>
+      <p>Spam? {result.label.toString()} Probability: {result.probability}</p>
     </div>
     // <div className="container mx-auto px-4 py-12 max-w-7xl">
     //   {/* Summary Bar */}

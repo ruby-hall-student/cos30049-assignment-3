@@ -61,6 +61,7 @@ def predict_input(spamInput: PredictionInput) -> PredictionOutput:
         )
 
         return spamOutput
+    #display any errors that occur
     except Exception as e:
         logger.error("Error trying to predict: " + str(e))
         raise HTTPException(status_code=500, detail="Internal error: " + str(e))
