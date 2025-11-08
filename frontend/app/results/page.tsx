@@ -11,6 +11,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Download, FileText, AlertTriangle, CheckCircle2, XCircle, AlertCircle, ChevronDown } from "lucide-react"
 import { useAnalysis } from "@/lib/analysis-context"
 import { exportToCSV, exportToJSON } from "@/lib/analyzer"
+import SpamDonutChart from "@/lib/Charts/DonutChart"
+import SpamBarChart from "@/lib/Charts/BarChart"
 
 export default function ResultsPage() {
   const router = useRouter()
@@ -27,10 +29,10 @@ export default function ResultsPage() {
   }
 
   const riskConfig = {
-    low: { color: "text-(--color-success)", bg: "bg-green-50", border: "border-green-200", icon: CheckCircle2 },
-    medium: { color: "text-(--color-warning)", bg: "bg-yellow-50", border: "border-yellow-200", icon: AlertCircle },
-    high: { color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200", icon: AlertTriangle },
-    severe: { color: "text-(--color-danger)", bg: "bg-red-50", border: "border-red-200", icon: XCircle },
+    low: { color: "text-(--color-success)", bg: "bg-green-50", border: "border-green-200", icon: CheckCircle2, rgbColor: "rgba(161, 214, 91, 1)" },
+    medium: { color: "text-(--color-warning)", bg: "bg-yellow-50", border: "border-yellow-200", icon: AlertCircle, rgbColor: "rgba(223, 216, 83, 1)"  },
+    high: { color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200", icon: AlertTriangle, rgbColor: "rgba(222, 153, 74, 1)"  },
+    severe: { color: "text-(--color-danger)", bg: "bg-red-50", border: "border-red-200", icon: XCircle, rgbColor: "rgba(197, 4, 4, 1)"  },
   }
 
   const config = riskConfig[result.riskLevel]
@@ -52,22 +54,30 @@ export default function ResultsPage() {
   }
 
   return (
+    //testing
+    // <div>
+    //   <p>Spam? {result.label.toString()} Probability: {result.probability}</p>
+    // </div>
+
     <div className="container mx-auto px-4 py-12 max-w-7xl">
-      {/* Summary Bar */}
       <Card className={`p-6 mb-8 ${config.bg} ${config.border} border-2`}>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <RiskIcon className={`h-12 w-12 ${config.color}`} aria-hidden="true" />
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-3xl font-bold">Risk Score: {result.score}/100</h1>
+                {/* display the probability that the email is spam as a percentage */}
+                <h1 className="text-3xl font-bold text-center">Result: {result.label? "Spam" : "Not Spam"}</h1>
+              </div>
+              <div className="flex items-center gap-3 mb-1">
+                <h2 className="text-1xl font-regular">Risk Percentage: {result.probability * 100}%</h2>
                 <Badge className={`${config.color} ${config.bg} border ${config.border}`}>
                   {result.riskLevel.toUpperCase()}
                 </Badge>
               </div>
-              <p className="text-muted-foreground">
+              {/* <p className="text-muted-foreground">
                 Analyzed {result.metrics.textLength.words} words • {result.metrics.textLength.readTime} read time
-              </p>
+              </p> */}
             </div>
           </div>
 
@@ -93,9 +103,21 @@ export default function ResultsPage() {
           </div>
         </div>
       </Card>
-
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Metrics Cards */}
+        <div className="lg:col-span-1 space-y-4">
+            <h2 className="text-3xl font-bold text-center">Likelihood of Spam</h2>
+            <SpamDonutChart spamProbability={result.probability} colours={["rgba(218, 81, 81, 1)","rgba(110, 230, 158, 1)"]} radius="90%"></SpamDonutChart>
+        </div>
+        <div className="lg:col-span-2 space-y-4">
+            <h2 className="text-3xl font-bold text-center">Spam Features</h2>
+            <SpamBarChart 
+              labels={["Text Length", "No. Digits", "No. Capital Letters", "No. Special Characters", "No. URLs", "No. Misspelled Words", "No. Suspicious Words"]}
+              spamFeatureData={[result.features.textLength, result.features.numDigits, result.features.numCapitalLetters, result.features.numSpecialCharacters, result.features.numURLs, result.features.numMisspelledWords, result.features.numSuspiciousWords]}
+              colour={config.rgbColor}
+            ></SpamBarChart>
+        </div>
+      </div>
+      {/* <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-2xl font-bold">Analysis Metrics</h2>
 
@@ -211,7 +233,6 @@ export default function ResultsPage() {
             </Card>
           </div>
 
-          {/* Risk Categories */}
           <div>
             <h2 className="text-2xl font-bold mb-4">Risk Categories</h2>
 
@@ -315,7 +336,6 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* Original Content Panel */}
         <div className="lg:col-span-1">
           <Card className="p-6 sticky top-20">
             <h2 className="text-xl font-bold mb-4">Original Content</h2>
@@ -339,11 +359,10 @@ export default function ResultsPage() {
         </div>
       </div>
 
-      {/* Print-only header */}
       <div className="hidden print-only">
         <h1 className="text-2xl font-bold mb-2">Spam & Malware Analysis Report</h1>
         <p className="text-sm text-muted-foreground mb-4">Generated on {new Date(result.timestamp).toLocaleString()}</p>
-      </div>
+      </div> */}
     </div>
   )
 }
