@@ -65,6 +65,31 @@ class InputExtractor:
         #print(dataDF)
 
         return dataDF
+    
+    #returns a list of dictionaries in form {text, isHighlighted, category} that sections the text into suspicious/unsuspicious words
+    def getSuspiciousText(self, text):
+        segments = []
+        lastIndex = 0
+
+        matches = re.finditer(self.spamWordsPattern, text)
+        for match in matches:
+            #add the not highlighted text before a match
+            if(match.start() > lastIndex):
+                segments.append({"text": text[lastIndex: match.start()], "isHighlighted": False})
+
+            segments.append({"text": match.group(), "isHighlighted": True})
+            lastIndex = match.end()
+
+        if lastIndex < len(text) - 1:
+            segments.append({"text": text[lastIndex: len(text) - 1], "isHighlighted": False})
+        
+        return segments
+
+
+
+
+
+
 
 #testing   
 #inputExtractor = InputExtractor()

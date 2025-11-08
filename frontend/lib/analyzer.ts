@@ -23,6 +23,8 @@ export interface AnalysisResult {
   probability: number
   riskLevel: "low" | "medium" | "high" | "severe"
 
+  //subjectHighlightedText: Array<{ text: string; isHighlighted: boolean;}>
+  //bodyHighlightedText: Array<{ text: string; isHighlighted: boolean;}>
 //   // originalText: string
 //   // timestamp: string
 //   // score: number
@@ -77,7 +79,9 @@ export function analyseText(text: any): AnalysisResult {
     features: text.features,
     label: text.label,
     probability: text.probability,
-    riskLevel: riskLevel
+    riskLevel: riskLevel,
+    //subjectHighlightedText: text.subjectHighlightedText,
+    //bodyHighlightedText: text.bodyHighlightedText
   }
 }
 
