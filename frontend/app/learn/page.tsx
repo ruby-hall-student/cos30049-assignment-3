@@ -643,8 +643,8 @@ export default function LearnPage() {
         </p>
       </div>
 
-// Analysis Overview Section
-// Explains the four-step analysis process (parsing, pattern matching, metrics, scoring)
+      {/* Analysis Overview Section */}
+      {/* Explains the four-step analysis process (parsing, pattern matching, metrics, scoring) */}
       <Card className="p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Analysis Overview</h2>
         <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -705,8 +705,8 @@ export default function LearnPage() {
         </div>
       </Card>
 
-// Model Explanation Section
-// Introduces the logistic regression model and its capabilities
+      {/* Model Explanation Section */}
+      {/* Introduces the logistic regression model and its capabilities */}
       <section className="space-y-4 mb-8">
         <h2 className="text-3xl md:text-4xl font-bold">Learn, How Our Model Understands Spam</h2>
         <p className="text-gray-700 max-w-3xl">
@@ -717,13 +717,13 @@ export default function LearnPage() {
         </p>
       </section>
 
-// Confusion Matrix Section
+      {/* Confusion Matrix Section */}
       <section id="viz-matrix" className="mb-8">
         <ConfusionMatrix metrics={metrics} confusion={confusion}></ConfusionMatrix>
       </section>
 
-// Why and What Section
-// Explains the motivation and feature selection rationale
+      {/* Why and What Section */}
+      {/* Explains the motivation and feature selection rationale */}
       <section className="grid md:grid-cols-2 gap-6 items-start mb-8">
         <div className="space-y-3">
           <h2 className="text-2xl font-semibold">Why we built this</h2>
@@ -741,22 +741,22 @@ export default function LearnPage() {
         </div>
       </section>
 
-// Feature Importance Section
+      {/* Feature Importance Section */}
       <section id="viz-importance" className="mb-8">
         <FeatureImportance data={FEATURE_IMPORTANCES} onFeatureClick={setHighlightFeature} />
       </section>
 
-// Scatter Plot Section
+      {/* Scatter Plot Section */}
       <section id="viz-scatter" className="mb-8">
         <ScatterPlot data={SCATTER_DATA} highlightFeature={highlightFeature} />
       </section>
 
-// Word Cloud Section
+      {/* Word Cloud Section */}
       <section id="viz-wordcloud" className="mb-8">
         <WordCloud />
       </section>
 
-// Future Directions Section
+      {/* Future Directions Section */}
       <section className="space-y-3 mb-8">
         <h2 className="text-2xl font-semibold">Where we're heading</h2>
         <p className="text-gray-700 max-w-3xl">
@@ -766,7 +766,7 @@ export default function LearnPage() {
         </p>
       </section>
 
-// Call to Action Section
+      {/* Call to Action Section */}
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-4">Ready to Try It?</h2>
         <p className="text-muted-foreground mb-6">

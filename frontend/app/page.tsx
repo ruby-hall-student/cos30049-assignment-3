@@ -7,8 +7,8 @@ import { FileText, Type, Hash, LinkIcon, AlertTriangle, Shield, Users, Zap, Lock
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-// Hero Section
-// Main landing area with sample email and analysis preview
+      {/* Hero Section */}
+      {/* Main landing area with sample email and analysis preview */}
       <section className="container mx-auto px-4 py-12 md:py-20">
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Sample Checker Box */}
@@ -100,8 +100,8 @@ export default function HomePage() {
         </div>
       </section>
 
-// What We Analyze Section
-// Grid of cards showing all analysis features (text length, capitals, URLs, etc.)
+      {/* What We Analyze Section */}
+      {/* Grid of cards showing all analysis features (text length, capitals, URLs, etc.) */}
       <section className="bg-muted/30 py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">What We Analyze</h2>
@@ -158,8 +158,8 @@ export default function HomePage() {
         </div>
       </section>
 
-// Privacy Section
-// Highlights local processing and zero data collection
+      {/* Privacy Section */}
+      {/* Highlights local processing and zero data collection */}
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center">
           <Lock className="h-12 w-12 text-(--color-primary) mx-auto mb-6" aria-hidden="true" />
@@ -186,8 +186,8 @@ export default function HomePage() {
         </div>
       </section>
 
-// Target Audience Section
-// Shows who can benefit from the tool (marketers, security teams, students)
+      {/* Target Audience Section */}
+      {/* Shows who can benefit from the tool (marketers, security teams, students) */}
       <section className="bg-muted/30 py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Who Is This For?</h2>
@@ -220,8 +220,8 @@ export default function HomePage() {
         </div>
       </section>
 
-// Final Call to Action Section
-// Encourages users to try the analyzer
+      {/* Final Call to Action Section */}
+      {/* Encourages users to try the analyzer */}
       <section className="container mx-auto px-4 py-16">
         <Card className="p-12 text-center bg-gradient-to-br from-blue-50 to-slate-50 border-2">
           <h2 className="text-3xl font-bold mb-4">Ready to Analyze Your Messages?</h2>

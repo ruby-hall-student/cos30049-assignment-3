@@ -227,8 +227,8 @@ export default function CheckPage() {
             <TabsTrigger value="paste">Paste Text</TabsTrigger>
           </TabsList>
 
-// File Upload Feature
-// Allows users to upload .eml or .txt files with drag-and-drop support
+          {/* File Upload Feature */}
+          {/* Allows users to upload .eml or .txt files with drag-and-drop support */}
           <TabsContent value="upload" className="space-y-4">
             <div
               onDrop={handleDrop}
@@ -270,8 +270,8 @@ export default function CheckPage() {
             )}
           </TabsContent>
 
-// Text Paste Feature
-// Allows users to manually paste email subject and body text for analysis
+          {/* Text Paste Feature */}
+          {/* Allows users to manually paste email subject and body text for analysis */}
           <TabsContent value="paste" className="space-y-4">
             <div>
               <label htmlFor="text-input" className="sr-only">
@@ -299,16 +299,16 @@ export default function CheckPage() {
           </TabsContent>
         </Tabs>
 
-// Error Display
-// Shows validation and processing errors to the user
+        {/* Error Display */}
+        {/* Shows validation and processing errors to the user */}
         {error && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800" role="alert">
             {error}
           </div>
         )}
 
-// Analysis Button
-// Triggers the spam analysis process when clicked
+        {/* Analysis Button */}
+        {/* Triggers the spam analysis process when clicked */}
         <Button onClick={handleAnalyze} disabled={!hasInput || isAnalyzing} size="lg" className="w-full mt-6">
           {isAnalyzing ? (
             <>
@@ -321,8 +321,8 @@ export default function CheckPage() {
         </Button>
       </Card>
 
-// Progress Indicator
-// Shows analysis progress with animated progress bar and status messages
+      {/* Progress Indicator */}
+      {/* Shows analysis progress with animated progress bar and status messages */}
       {isAnalyzing && (
         <Card className="mt-8 p-8 text-center">
           <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-(--color-primary)" aria-hidden="true" />
