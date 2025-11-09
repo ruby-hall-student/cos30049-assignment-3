@@ -111,7 +111,7 @@ function ConfusionMatrix({metrics, confusion}: any) {
     const cellW = innerW / 2
     const cellH = innerH / 2
 
-    g.append("text").attr("x", -40).attr("y", -16).attr("class", "text-sm fill-gray-600").text("Actual")
+    g.append("text").attr("x", -70).attr("y", innerH/2).attr("class", "text-sm fill-gray-600").text("Actual")
     g.append("text")
       .attr("x", innerW / 2)
       .attr("y", innerH + 28)
