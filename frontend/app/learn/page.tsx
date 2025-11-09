@@ -73,109 +73,107 @@ function useResizeObserver(ref: any) {
 // ============================================================================
 
 // Confusion Matrix Chart
-function ConfusionMatrix(metrics: any) {
+function ConfusionMatrix({metrics, confusion}: any) {
   
   // // const data = MATRIX_DATA[modelKey]
-  // const containerRef = useRef(null)
-  // const svgRef = useRef(null)
-  // const { width } = useResizeObserver(containerRef)
+  const containerRef = useRef(null)
+  const svgRef = useRef(null)
+  const { width } = useResizeObserver(containerRef)
 
-  // const grid = useMemo(() => {
-  //   const { TP, FP, FN, TN } = data.matrix
-  //   return [
-  //     { r: 0, c: 0, label: "TP", value: TP, name: "True Positive" },
-  //     { r: 0, c: 1, label: "FP", value: FP, name: "False Positive" },
-  //     { r: 1, c: 0, label: "FN", value: FN, name: "False Negative" },
-  //     { r: 1, c: 1, label: "TN", value: TN, name: "True Negative" },
-  //   ]
-  // }, [data])
+  const grid = useMemo(() => {
+    return [
+      { r: 0, c: 0, label: "TP", value: confusion.tp, name: "True Positive" },
+      { r: 0, c: 1, label: "FP", value: confusion.fp, name: "False Positive" },
+      { r: 1, c: 0, label: "FN", value: confusion.fn, name: "False Negative" },
+      { r: 1, c: 1, label: "TN", value: confusion.tn, name: "True Negative" },
+    ]
+  }, [confusion])
 
-  // useEffect(() => {
-  //   if (!svgRef.current || !width) return
+  useEffect(() => {
+    if (!svgRef.current || !width) return
 
-  //   const w = Math.max(320, width)
-  //   const h = 320
-  //   const m = { t: 36, r: 16, b: 36, l: 80 }
-  //   const innerW = w - m.l - m.r
-  //   const innerH = h - m.t - m.b
+    const w = Math.max(320, width)
+    const h = 320
+    const m = { t: 36, r: 16, b: 36, l: 80 }
+    const innerW = w - m.l - m.r
+    const innerH = h - m.t - m.b
 
-  //   const svg = d3.select(svgRef.current).attr("viewBox", `0 0 ${w} ${h}`)
-  //   svg.selectAll("*").remove()
+    const svg = d3.select(svgRef.current).attr("viewBox", `0 0 ${w} ${h}`)
+    svg.selectAll("*").remove()
 
-  //   const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`)
+    const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`)
 
-  //   const color = d3
-  //     .scaleLinear()
-  //     .domain(d3.extent(grid.map((d) => d.value)))
-  //     .range(["#eaeaea", "#1f77b4"])
+    const color = d3
+      .scaleLinear()
+      .domain(d3.extent(grid.map((d) => d.value)))
+      .range(["#eaeaea", "#1f77b4"])
 
-  //   const cellW = innerW / 2
-  //   const cellH = innerH / 2
+    const cellW = innerW / 2
+    const cellH = innerH / 2
 
-  //   g.append("text").attr("x", -40).attr("y", -16).attr("class", "text-sm fill-gray-600").text("Actual")
-  //   g.append("text")
-  //     .attr("x", innerW / 2)
-  //     .attr("y", innerH + 28)
-  //     .attr("text-anchor", "middle")
-  //     .attr("class", "text-sm fill-gray-600")
-  //     .text("Predicted")
+    g.append("text").attr("x", -40).attr("y", -16).attr("class", "text-sm fill-gray-600").text("Actual")
+    g.append("text")
+      .attr("x", innerW / 2)
+      .attr("y", innerH + 28)
+      .attr("text-anchor", "middle")
+      .attr("class", "text-sm fill-gray-600")
+      .text("Predicted")
 
-  //   const cols = ["Spam", "Ham"]
-  //   cols.forEach((c, i) => {
-  //     g.append("text")
-  //       .attr("x", i * cellW + cellW / 2)
-  //       .attr("y", -4)
-  //       .attr("text-anchor", "middle")
-  //       .attr("class", "text-sm font-medium fill-gray-800")
-  //       .text(c)
-  //   })
+    const cols = ["Spam", "Ham"]
+    cols.forEach((c, i) => {
+      g.append("text")
+        .attr("x", i * cellW + cellW / 2)
+        .attr("y", -4)
+        .attr("text-anchor", "middle")
+        .attr("class", "text-sm font-medium fill-gray-800")
+        .text(c)
+    })
 
-  //   const rows = ["Spam", "Ham"]
-  //   rows.forEach((r, i) => {
-  //     g.append("text")
-  //       .attr("x", -8)
-  //       .attr("y", i * cellH + cellH / 2)
-  //       .attr("dy", "0.35em")
-  //       .attr("text-anchor", "end")
-  //       .attr("class", "text-sm font-medium fill-gray-800")
-  //       .text(r)
-  //   })
+    const rows = ["Spam", "Ham"]
+    rows.forEach((r, i) => {
+      g.append("text")
+        .attr("x", -8)
+        .attr("y", i * cellH + cellH / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "end")
+        .attr("class", "text-sm font-medium fill-gray-800")
+        .text(r)
+    })
 
-  //   const cells = g
-  //     .selectAll("g.cell")
-  //     .data(grid)
-  //     .join((enter) => enter.append("g").attr("class", "cell"))
-  //     .attr("transform", (d) => `translate(${d.c * cellW},${d.r * cellH})`)
+    const cells = g
+      .selectAll("g.cell")
+      .data(grid)
+      .join((enter) => enter.append("g").attr("class", "cell"))
+      .attr("transform", (d) => `translate(${d.c * cellW},${d.r * cellH})`)
 
-  //   cells
-  //     .append("rect")
-  //     .attr("width", cellW - 4)
-  //     .attr("height", cellH - 4)
-  //     .attr("rx", 12)
-  //     .attr("x", 2)
-  //     .attr("y", 2)
-  //     .attr("fill", (d) => color(d.value))
+    cells
+      .append("rect")
+      .attr("width", cellW - 4)
+      .attr("height", cellH - 4)
+      .attr("rx", 12)
+      .attr("x", 2)
+      .attr("y", 2)
+      .attr("fill", (d) => color(d.value))
 
-  //   cells
-  //     .append("text")
-  //     .attr("x", cellW / 2)
-  //     .attr("y", cellH / 2 - 6)
-  //     .attr("text-anchor", "middle")
-  //     .attr("class", "text-lg font-semibold fill-white")
-  //     .text((d) => d.label)
+    cells
+      .append("text")
+      .attr("x", cellW / 2)
+      .attr("y", cellH / 2 - 6)
+      .attr("text-anchor", "middle")
+      .attr("class", "text-lg font-semibold fill-white")
+      .text((d) => d.label)
 
-  //   cells
-  //     .append("text")
-  //     .attr("x", cellW / 2)
-  //     .attr("y", cellH / 2 + 18)
-  //     .attr("text-anchor", "middle")
-  //     .attr("class", "text-sm font-medium fill-white")
-  //     .text((d) => d.value.toLocaleString())
-  // }, [grid, width])
+    cells
+      .append("text")
+      .attr("x", cellW / 2)
+      .attr("y", cellH / 2 + 18)
+      .attr("text-anchor", "middle")
+      .attr("class", "text-sm font-medium fill-white")
+      .text((d) => d.value.toLocaleString())
+  }, [grid, width])
 
-  //const metrics = data.metrics
-
-  console.log(metrics)
+  //used for testing
+  //console.log(metrics.metrics.accuracy)
 
   return (
     <Card className="w-full">
@@ -188,8 +186,7 @@ function ConfusionMatrix(metrics: any) {
             </p>
           </div>
         </div>
-        <h1>Hi{metrics.accuracy}</h1>
-        {/* <div ref={containerRef} className="w-full h-[340px]">
+        <div ref={containerRef} className="w-full h-[340px]">
           <svg ref={svgRef} className="w-full h-full" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
@@ -212,7 +209,7 @@ function ConfusionMatrix(metrics: any) {
               </div>
             </div>
           ))}
-        </div> */}
+        </div>
       </CardContent>
     </Card>
   )
@@ -573,14 +570,16 @@ export default function LearnPage() {
             recall: response.data.metrics.Recall,
             f1: response.data.metrics.F1
           }));
-          // setMetrics({
-          //   accuracy: response.data.metrics.Accuracy, 
-          //   precision: response.data.metrics.Precision,
-          //   recall: response.data.metrics.Recall,
-          //   f1: response.data.metrics.F1
-          // });
 
-          console.log("accuracy" + response.data.metrics.Accuracy);
+          setConfusion(({
+            ...confusion, 
+            tn: response.data.confusionMatrix.TN,
+            tp: response.data.confusionMatrix.TP,
+            fn: response.data.confusionMatrix.FN,
+            fp: response.data.confusionMatrix.FP,
+          }))
+
+          //console.log("accuracy" + response.data.metrics.Accuracy);
         }
       })
       .catch((err) => {
@@ -672,31 +671,10 @@ export default function LearnPage() {
           <span className="font-semibold">how accurate</span> it is and <span className="font-semibold">what signals</span>{" "}
           it uses.
         </p>
-        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: "Accuracy", v: activeModel.metrics.accuracy },
-            { label: "Precision", v: activeModel.metrics.precision },
-            { label: "Recall", v: activeModel.metrics.recall },
-            { label: "F1-score", v: activeModel.metrics.f1 },
-          ].map((k) => (
-            <div key={k.label} className="rounded-2xl border p-4">
-              <div className="text-sm text-gray-600">{k.label}</div>
-              <div className="text-2xl font-semibold">
-                {!isNaN(k.v)
-                  ? k.v.toLocaleString(undefined, {
-                      style: "percent",
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })
-                  : "N/A"}
-              </div>
-            </div>
-          ))}
-        </div> */}
       </section>
 
       <section id="viz-matrix" className="mb-8">
-        <ConfusionMatrix metrics={metrics}/>
+        <ConfusionMatrix metrics={metrics} confusion={confusion}></ConfusionMatrix>
       </section>
 
       <section className="grid md:grid-cols-2 gap-6 items-start mb-8">
@@ -704,7 +682,7 @@ export default function LearnPage() {
           <h2 className="text-2xl font-semibold">Why we built this</h2>
           <p className="text-gray-700">
             Email is essential, and a major security risk. Instead of fragile keyword rules, our system learns patterns in
-            real emails: link density, typography, and suspicious phrasing. That makes it adaptable to new spam tactics.
+            real emails, including suspicious phrasing and misspelled words. This makes it adaptable to new spam tactics.
           </p>
         </div>
         <div className="space-y-3">
