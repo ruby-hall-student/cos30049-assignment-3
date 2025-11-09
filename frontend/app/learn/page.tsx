@@ -23,6 +23,12 @@ const FEATURE_IMPORTANCES = [
   { feature: "Frequency Analysis", importance: 0.05, hint: "Counted the frequency of top suspicious or flagged words" },
 ]
 
+// Scatter Plot Data Generation
+// Creates 1200 synthetic email data points for visualization
+// - First 500 are spam, rest are ham (legitimate emails)
+// - URLs: spam emails have higher average (4) vs ham (1.2)
+// - Capital letters: spam emails have higher average (10) vs ham (3)
+// - Uses normal distribution to simulate realistic variation
 const SCATTER_DATA = d3.range(1200).map((i) => {
   const spam = i < 500
   const urls = Math.max(0, Math.round(d3.randomNormal(spam ? 4 : 1.2, spam ? 1.8 : 0.9)()))
@@ -54,11 +60,25 @@ function useResizeObserver(ref: any) {
 
 // Confusion Matrix Visualization
 // Displays model performance metrics (TP, FP, FN, TN) and accuracy scores
+// HOW IT WORKS:
+// A confusion matrix is a 2x2 grid showing classification results:
+// - TP (True Positive): Correctly predicted spam emails (top-left)
+// - FP (False Positive): Incorrectly predicted spam (ham predicted as spam, top-right)
+// - FN (False Negative): Incorrectly predicted ham (spam predicted as ham, bottom-left)
+// - TN (True Negative): Correctly predicted ham emails (bottom-right)
+//
+// METRICS CALCULATION (from backend API):
+// - Accuracy = (TP + TN) / (TP + TN + FP + FN) - Overall correctness
+// - Precision = TP / (TP + FP) - Of predicted spam, how many were actually spam
+// - Recall = TP / (TP + FN) - Of actual spam, how many were correctly identified
+// - F1-Score = 2 * (Precision * Recall) / (Precision + Recall) - Harmonic mean of precision and recall
 function ConfusionMatrix({metrics, confusion}: any) {
   const containerRef = useRef(null)
   const svgRef = useRef(null)
   const { width } = useResizeObserver(containerRef)
 
+  // Create 2x2 grid structure for the confusion matrix
+  // Each cell has: row position (r), column position (c), label, value count, and full name
   const grid = useMemo(() => {
     return [
       { r: 0, c: 0, label: "TP", value: confusion.tp, name: "True Positive" },
@@ -82,11 +102,14 @@ function ConfusionMatrix({metrics, confusion}: any) {
 
     const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`)
 
+    // Color scale: lighter gray for lower values, darker blue for higher values
+    // This helps visualize which cells have more predictions
     const color = d3
       .scaleLinear()
       .domain(d3.extent(grid.map((d) => d.value)))
       .range(["#eaeaea", "#1f77b4"])
 
+    // Calculate cell dimensions: divide the inner area into 2x2 grid
     const cellW = innerW / 2
     const cellH = innerH / 2
 
@@ -193,12 +216,18 @@ function ConfusionMatrix({metrics, confusion}: any) {
 
 // Feature Importance Bar Chart
 // Shows which features (URLs, capitals, etc.) are most important for spam detection
+// HOW IT WORKS:
+// Feature importance values come from the logistic regression model's coefficients
+// Higher importance = feature has more influence on spam classification
+// Values are normalized percentages (0-1) showing relative contribution
+// The chart sorts features by importance and displays as horizontal bars
 function FeatureImportance({ data, onFeatureClick }) {
   const [showTop5, setShowTop5] = useState(true)
   const containerRef = useRef(null)
   const svgRef = useRef(null)
   const { width } = useResizeObserver(containerRef)
 
+  // Sort features by importance (highest first) and optionally show only top 5
   const sorted = useMemo(() => {
     const s = [...data].sort((a, b) => d3.descending(a.importance, b.importance))
     return showTop5 ? s.slice(0, 5) : s
@@ -217,12 +246,16 @@ function FeatureImportance({ data, onFeatureClick }) {
     svg.selectAll("*").remove()
     const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`)
 
+    // X-axis scale: maps importance values (0 to max) to pixel positions
+    // Domain is the data range, range is the visual width
     const x = d3
       .scaleLinear()
       .domain([0, d3.max(sorted, (d) => d.importance) || 1])
       .nice()
       .range([0, innerW])
 
+    // Y-axis scale: maps feature names to vertical positions
+    // Creates bands for each feature with spacing between them
     const y = d3
       .scaleBand()
       .domain(sorted.map((d) => d.feature))
@@ -291,6 +324,13 @@ function FeatureImportance({ data, onFeatureClick }) {
 
 // Scatter Plot Visualization
 // Visualizes patterns separating spam from ham emails based on URLs and capital letters
+// HOW IT WORKS:
+// Each point represents an email with:
+// - X-axis: Number of URLs in the email
+// - Y-axis: Number of capital letters in the email
+// - Color: Orange for spam, Purple for ham
+// The plot shows clustering patterns: spam emails tend to have more URLs and capitals
+// When a feature is highlighted, points meeting threshold criteria get outlined
 function ScatterPlot({ data, highlightFeature }) {
   const [showSpam, setShowSpam] = useState(true)
   const [showHam, setShowHam] = useState(true)
@@ -298,6 +338,7 @@ function ScatterPlot({ data, highlightFeature }) {
   const svgRef = useRef(null)
   const { width } = useResizeObserver(containerRef)
 
+  // Filter data based on visibility toggles: show/hide spam and ham points
   const filtered = useMemo(() => {
     return data.filter((d) => (d.label === "spam" ? showSpam : showHam))
   }, [data, showSpam, showHam])
@@ -316,12 +357,17 @@ function ScatterPlot({ data, highlightFeature }) {
 
     const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`)
 
+    // Find max values for scaling, with minimum thresholds to ensure readable axes
     const xMax = d3.max(filtered, (d) => d.urls) ?? 10
     const yMax = d3.max(filtered, (d) => d.caps) ?? 10
 
+    // Create scales: map data values to pixel positions
+    // X-axis: URLs count (0 to max) maps to horizontal position
+    // Y-axis: Capital letters count (0 to max) maps to vertical position (inverted: top is higher)
     const x = d3.scaleLinear().domain([0, Math.max(6, xMax + 1)]).range([0, innerW])
     const y = d3.scaleLinear().domain([0, Math.max(12, yMax + 2)]).range([innerH, 0])
 
+    // Color mapping: spam = orange, ham = purple
     const color = d3.scaleOrdinal().domain(["spam", "ham"]).range(["#f59e0b", "#6d28d9"])
 
     g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(6))
@@ -355,6 +401,8 @@ function ScatterPlot({ data, highlightFeature }) {
 
     pts.append("title").text((d) => `${d.label.toUpperCase()}\nURLs: ${d.urls}\nCAPS: ${d.caps}`)
 
+    // Highlight feature thresholds: outline points that meet suspicious criteria
+    // URLs >= 4 or Capital Letters >= 8 are common spam indicators
     if (highlightFeature === "URLs") {
       pts.filter((d) => d.urls >= 4).attr("stroke", "#111").attr("stroke-width", 0.8)
     }
@@ -392,17 +440,25 @@ function ScatterPlot({ data, highlightFeature }) {
 
 // Word Cloud Visualization
 // Displays most frequent words in spam emails with size based on frequency
+// HOW IT WORKS:
+// 1. Loads word frequency data from CSV (pre-calculated from spam email dataset)
+// 2. Takes top 52 most frequent words
+// 3. Word size is proportional to frequency: more occurrences = larger text
+// 4. Uses d3-cloud algorithm to arrange words without overlap
+// 5. Words are randomly rotated (0° or 90°) for visual variety
 function WordCloud() {
   const svgRef = useRef(null)
   const tooltipRef = useRef(null)
   const [words, setWords] = useState([])
 
+  // Load word frequency data from CSV file
+  // CSV contains: word, count (number of times word appeared in spam emails)
   useEffect(() => {
-    // Load the CSV
     fetch("/data/spamWordFrequencies.csv")
       .then((res) => res.text())
       .then((text) => {
         const data = d3.csvParse(text)
+        // Take top 52 words (most frequent)
         const sliced = data.slice(0, 52)
         setWords(sliced.map((d) => ({ text: d.word, size: +d.count })))
       })
@@ -430,28 +486,38 @@ function WordCloud() {
       .style("opacity", 0)
       .style("transition", "opacity 0.2s ease")
 
+    // Color scale: assigns different colors to words based on their index
     const color = d3.scaleSequential(d3.interpolateCool).domain([0, words.length])
+    
+    // Size scale: maps word frequency count to font size (10px to 80px)
+    // Uses square root scale so size differences are more visually balanced
+    // Higher frequency = larger font size
     const sizeScale = d3
       .scaleSqrt()
       .domain([0, d3.max(words, (d) => d.size)])
       .range([10, 80])
 
+    // Configure word cloud layout algorithm
+    // This algorithm arranges words to fit without overlapping
     const layout = cloud()
       .size([width, height])
       .words(
         words.map((d) => ({ 
           text: d.text, 
-          size: sizeScale(d.size), 
-          count: d.size, 
+          size: sizeScale(d.size), // Convert count to pixel size
+          count: d.size, // Keep original count for tooltip
         })))
-      .padding(5)
-      .rotate(() => (Math.random() > 0.5 ? 0 : 90))
+      .padding(5) // Space between words
+      .rotate(() => (Math.random() > 0.5 ? 0 : 90)) // Random rotation for visual interest
       .font("Impact")
       .fontSize((d) => d.size)
-      .on("end", draw)
+      .on("end", draw) // Callback when layout is complete
 
+    // Start the layout algorithm (runs asynchronously)
     layout.start()
 
+    // Draw function: called when word cloud layout is complete
+    // Positions each word at calculated (x, y) coordinates from the layout algorithm
     function draw(words) {
       const group = svg
         .append("g")
@@ -462,13 +528,13 @@ function WordCloud() {
         .data(words)
         .enter()
         .append("text")
-        .style("font-size", (d) => `${d.size}px`)
+        .style("font-size", (d) => `${d.size}px`) // Size based on frequency
         .style("font-family", "Impact")
-        .style("fill", (_, i) => color(i))
+        .style("fill", (_, i) => color(i)) // Color based on position
         .attr("text-anchor", "middle")
-        .attr("transform", (d) => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+        .attr("transform", (d) => `translate(${d.x},${d.y})rotate(${d.rotate})`) // Position and rotation from layout
         .text((d) => d.text)
-        //tool tip mouse stuff
+        // Tooltip: show word and frequency count on hover
         .on("mouseover", (event, d) => { 
           tooltip
             .style("opacity", 1)
@@ -530,12 +596,16 @@ export default function LearnPage() {
     handleDisplayMetrics();
   }, []);
 
+  // Fetch model performance metrics from backend API
+  // The backend calculates metrics from the confusion matrix:
+  // - Accuracy, Precision, Recall, F1-score
+  // - Confusion matrix values (TP, FP, FN, TN)
   const handleDisplayMetrics = () => {
     try {
-      //get the data from the api endpoint /metrics/
       axios.get("http://localhost:8000/metrics/")
       .then((response)=>{
         if(response.status===200){
+          // Store calculated metrics (already computed on backend)
           setMetrics(({
             ...metrics,
             accuracy: response.data.metrics.Accuracy,
@@ -544,6 +614,7 @@ export default function LearnPage() {
             f1: response.data.metrics.F1
           }));
 
+          // Store confusion matrix counts (raw prediction results)
           setConfusion(({
             ...confusion, 
             tn: response.data.confusionMatrix.TN,
