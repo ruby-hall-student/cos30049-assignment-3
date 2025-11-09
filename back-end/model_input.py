@@ -85,12 +85,6 @@ class InputExtractor:
         
         return segments
 
-
-
-
-
-
-
 #testing   
 #inputExtractor = InputExtractor()
 #inputExtractor.extractFeatures("Hello 15 @@ hello.com YYY mispelled wurds money money investment now quick cnn")

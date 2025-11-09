@@ -84,11 +84,11 @@ export default function CheckPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
-      const validTypes = [".eml", ".msg", ".txt", "text/plain", "message/rfc822"]
+      const validTypes = [".eml", ".txt"]
       const isValid = validTypes.some((type) => selectedFile.name.endsWith(type) || selectedFile.type === type)
 
       if (!isValid) {
-        setError("Please upload a .eml, .msg, or .txt file")
+        setError("Please upload a .eml or .txt file")
         setFile(null)
         return
       }

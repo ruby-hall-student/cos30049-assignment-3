@@ -7,24 +7,25 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, ArrowRight } from "lucide-react"
+import axios from "axios"
 
 
 // ============================================================================
 // DATA SECTION
 // ============================================================================
 
-const MATRIX_DATA = {
-  logistic_regression: {
-    name: "Logistic Regression",
-    matrix: { TP: 170, FP: 80, FN: 830, TN: 920 },
-    metrics: {
-      accuracy: (170 + 920) / 2000,
-      precision: 170 / (170 + 80),
-      recall: 170 / (170 + 830),
-      f1: (2 * (170 / (170 + 80)) * (170 / (170 + 830))) / ((170 / (170 + 80)) + (170 / (170 + 830))),
-    },
-  },
-}
+// const MATRIX_DATA = {
+//   logistic_regression: {
+//     name: "Logistic Regression",
+//     matrix: { TP: 170, FP: 80, FN: 830, TN: 920 },
+//     metrics: {
+//       accuracy: (170 + 920) / 2000,
+//       precision: 170 / (170 + 80),
+//       recall: 170 / (170 + 830),
+//       f1: (2 * (170 / (170 + 80)) * (170 / (170 + 830))) / ((170 / (170 + 80)) + (170 / (170 + 830))),
+//     },
+//   },
+// }
 
 const FEATURE_IMPORTANCES = [
   { feature: "URLs", importance: 0.23, hint: "Detected and counted the number of URLs in the emails" },
@@ -47,7 +48,7 @@ const SCATTER_DATA = d3.range(1200).map((i) => {
 // ============================================================================
 // UTILITY HOOKS
 // ============================================================================
-function useResizeObserver(ref) {
+function useResizeObserver(ref: any) {
   const [bounds, setBounds] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
@@ -72,21 +73,21 @@ function useResizeObserver(ref) {
 // ============================================================================
 
 // Confusion Matrix Chart
-function ConfusionMatrix({ modelKey }) {
-  const data = MATRIX_DATA[modelKey]
+function ConfusionMatrix({metrics, confusion}: any) {
+  
+  // // const data = MATRIX_DATA[modelKey]
   const containerRef = useRef(null)
   const svgRef = useRef(null)
   const { width } = useResizeObserver(containerRef)
 
   const grid = useMemo(() => {
-    const { TP, FP, FN, TN } = data.matrix
     return [
-      { r: 0, c: 0, label: "TP", value: TP, name: "True Positive" },
-      { r: 0, c: 1, label: "FP", value: FP, name: "False Positive" },
-      { r: 1, c: 0, label: "FN", value: FN, name: "False Negative" },
-      { r: 1, c: 1, label: "TN", value: TN, name: "True Negative" },
+      { r: 0, c: 0, label: "TP", value: confusion.tp, name: "True Positive" },
+      { r: 0, c: 1, label: "FP", value: confusion.fp, name: "False Positive" },
+      { r: 1, c: 0, label: "FN", value: confusion.fn, name: "False Negative" },
+      { r: 1, c: 1, label: "TN", value: confusion.tn, name: "True Negative" },
     ]
-  }, [data])
+  }, [confusion])
 
   useEffect(() => {
     if (!svgRef.current || !width) return
@@ -110,7 +111,7 @@ function ConfusionMatrix({ modelKey }) {
     const cellW = innerW / 2
     const cellH = innerH / 2
 
-    g.append("text").attr("x", -40).attr("y", -16).attr("class", "text-sm fill-gray-600").text("Actual")
+    g.append("text").attr("x", -70).attr("y", innerH/2).attr("class", "text-sm fill-gray-600").text("Actual")
     g.append("text")
       .attr("x", innerW / 2)
       .attr("y", innerH + 28)
@@ -171,7 +172,8 @@ function ConfusionMatrix({ modelKey }) {
       .text((d) => d.value.toLocaleString())
   }, [grid, width])
 
-  const metrics = data.metrics
+  //used for testing
+  //console.log(metrics.metrics.accuracy)
 
   return (
     <Card className="w-full">
@@ -290,7 +292,7 @@ function FeatureImportance({ data, onFeatureClick }) {
           <div>
             <h3 className="text-xl font-semibold">What signals drive the prediction</h3>
             <p className="text-sm text-gray-600">
-              Links, CAPITALS, and suspicious terms are strong indicators. Less useful features are filtered out.
+              Links, capitals, and suspicious terms are strong indicators. Less useful features are filtered out.
             </p>
           </div>
           <div className="flex gap-2">
@@ -537,7 +539,59 @@ export default function LearnPage() {
   const modelKey = "logistic_regression"
   const [highlightFeature, setHighlightFeature] = useState(null)
 
-  const activeModel = MATRIX_DATA[modelKey]
+  const [metrics, setMetrics] = useState({
+    accuracy: 0, 
+    precision: 0, 
+    recall: 0, 
+    f1: 0
+  })
+
+  const[confusion, setConfusion] = useState({
+    tn: 0,
+    fn: 0, 
+    tp: 0, 
+    fp: 0
+  })
+
+  useEffect(() => {
+    handleDisplayMetrics();
+  }, []);
+
+  const handleDisplayMetrics = () => {
+    try {
+      //get the data from the api endpoint /metrics/
+      axios.get("http://localhost:8000/metrics/")
+      .then((response)=>{
+        if(response.status===200){
+          setMetrics(({
+            ...metrics,
+            accuracy: response.data.metrics.Accuracy,
+            precision: response.data.metrics.Precision,
+            recall: response.data.metrics.Recall,
+            f1: response.data.metrics.F1
+          }));
+
+          setConfusion(({
+            ...confusion, 
+            tn: response.data.confusionMatrix.TN,
+            tp: response.data.confusionMatrix.TP,
+            fn: response.data.confusionMatrix.FN,
+            fp: response.data.confusionMatrix.FP,
+          }))
+
+          //console.log("accuracy" + response.data.metrics.Accuracy);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    }
+    catch(err){
+      console.log(err)
+    }
+  }
+
+  //const activeModel = MATRIX_DATA[modelKey]
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -617,31 +671,10 @@ export default function LearnPage() {
           <span className="font-semibold">how accurate</span> it is and <span className="font-semibold">what signals</span>{" "}
           it uses.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: "Accuracy", v: activeModel.metrics.accuracy },
-            { label: "Precision", v: activeModel.metrics.precision },
-            { label: "Recall", v: activeModel.metrics.recall },
-            { label: "F1-score", v: activeModel.metrics.f1 },
-          ].map((k) => (
-            <div key={k.label} className="rounded-2xl border p-4">
-              <div className="text-sm text-gray-600">{k.label}</div>
-              <div className="text-2xl font-semibold">
-                {!isNaN(k.v)
-                  ? k.v.toLocaleString(undefined, {
-                      style: "percent",
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })
-                  : "N/A"}
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
 
       <section id="viz-matrix" className="mb-8">
-        <ConfusionMatrix modelKey={modelKey} />
+        <ConfusionMatrix metrics={metrics} confusion={confusion}></ConfusionMatrix>
       </section>
 
       <section className="grid md:grid-cols-2 gap-6 items-start mb-8">
@@ -649,7 +682,7 @@ export default function LearnPage() {
           <h2 className="text-2xl font-semibold">Why we built this</h2>
           <p className="text-gray-700">
             Email is essential, and a major security risk. Instead of fragile keyword rules, our system learns patterns in
-            real emails: link density, typography, and suspicious phrasing. That makes it adaptable to new spam tactics.
+            real emails, including suspicious phrasing and misspelled words. This makes it adaptable to new spam tactics.
           </p>
         </div>
         <div className="space-y-3">
