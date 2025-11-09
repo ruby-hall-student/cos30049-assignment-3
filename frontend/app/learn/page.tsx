@@ -9,23 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Lightbulb, ArrowRight } from "lucide-react"
 import axios from "axios"
 
-
-// ============================================================================
-// DATA SECTION
-// ============================================================================
-
-// const MATRIX_DATA = {
-//   logistic_regression: {
-//     name: "Logistic Regression",
-//     matrix: { TP: 170, FP: 80, FN: 830, TN: 920 },
-//     metrics: {
-//       accuracy: (170 + 920) / 2000,
-//       precision: 170 / (170 + 80),
-//       recall: 170 / (170 + 830),
-//       f1: (2 * (170 / (170 + 80)) * (170 / (170 + 830))) / ((170 / (170 + 80)) + (170 / (170 + 830))),
-//     },
-//   },
-// }
+// Feature Importance Data
+// Predefined feature importance values for visualization
 
 const FEATURE_IMPORTANCES = [
   { feature: "URLs", importance: 0.23, hint: "Detected and counted the number of URLs in the emails" },
@@ -45,9 +30,8 @@ const SCATTER_DATA = d3.range(1200).map((i) => {
   return { id: `e${i}`, urls, caps, label: spam ? "spam" : "ham" }
 })
 
-// ============================================================================
-// UTILITY HOOKS
-// ============================================================================
+// Resize Observer Hook
+// Tracks container dimensions for responsive visualizations
 function useResizeObserver(ref: any) {
   const [bounds, setBounds] = useState({ width: 0, height: 0 })
 
@@ -68,14 +52,9 @@ function useResizeObserver(ref: any) {
   return bounds
 }
 
-// ============================================================================
-// VISUALIZATION COMPONENTS
-// ============================================================================
-
-// Confusion Matrix Chart
+// Confusion Matrix Visualization
+// Displays model performance metrics (TP, FP, FN, TN) and accuracy scores
 function ConfusionMatrix({metrics, confusion}: any) {
-  
-  // // const data = MATRIX_DATA[modelKey]
   const containerRef = useRef(null)
   const svgRef = useRef(null)
   const { width } = useResizeObserver(containerRef)
@@ -172,9 +151,6 @@ function ConfusionMatrix({metrics, confusion}: any) {
       .text((d) => d.value.toLocaleString())
   }, [grid, width])
 
-  //used for testing
-  //console.log(metrics.metrics.accuracy)
-
   return (
     <Card className="w-full">
       <CardContent className="p-4 md:p-6">
@@ -216,6 +192,7 @@ function ConfusionMatrix({metrics, confusion}: any) {
 }
 
 // Feature Importance Bar Chart
+// Shows which features (URLs, capitals, etc.) are most important for spam detection
 function FeatureImportance({ data, onFeatureClick }) {
   const [showTop5, setShowTop5] = useState(true)
   const containerRef = useRef(null)
@@ -312,7 +289,8 @@ function FeatureImportance({ data, onFeatureClick }) {
   )
 }
 
-// Scatter Plot
+// Scatter Plot Visualization
+// Visualizes patterns separating spam from ham emails based on URLs and capital letters
 function ScatterPlot({ data, highlightFeature }) {
   const [showSpam, setShowSpam] = useState(true)
   const [showHam, setShowHam] = useState(true)
@@ -412,9 +390,8 @@ function ScatterPlot({ data, highlightFeature }) {
   )
 }
 
-//##############################
-//###############################
-//Word Cloud#####################
+// Word Cloud Visualization
+// Displays most frequent words in spam emails with size based on frequency
 function WordCloud() {
   const svgRef = useRef(null)
   const tooltipRef = useRef(null)
@@ -528,13 +505,9 @@ function WordCloud() {
     </Card>
   )
 }
-//######################################
-//######################################
 
-// ============================================================================
-// MAIN PAGE COMPONENT
-// ============================================================================
-
+// Metrics API Integration
+// Fetches model performance metrics from backend API
 export default function LearnPage() {
   const modelKey = "logistic_regression"
   const [highlightFeature, setHighlightFeature] = useState(null)
@@ -578,8 +551,6 @@ export default function LearnPage() {
             fn: response.data.confusionMatrix.FN,
             fp: response.data.confusionMatrix.FP,
           }))
-
-          //console.log("accuracy" + response.data.metrics.Accuracy);
         }
       })
       .catch((err) => {
@@ -591,8 +562,6 @@ export default function LearnPage() {
     }
   }
 
-  //const activeModel = MATRIX_DATA[modelKey]
-
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       <div className="text-center mb-12">
@@ -603,6 +572,8 @@ export default function LearnPage() {
         </p>
       </div>
 
+// Analysis Overview Section
+// Explains the four-step analysis process (parsing, pattern matching, metrics, scoring)
       <Card className="p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Analysis Overview</h2>
         <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -663,6 +634,8 @@ export default function LearnPage() {
         </div>
       </Card>
 
+// Model Explanation Section
+// Introduces the logistic regression model and its capabilities
       <section className="space-y-4 mb-8">
         <h2 className="text-3xl md:text-4xl font-bold">Learn, How Our Model Understands Spam</h2>
         <p className="text-gray-700 max-w-3xl">
@@ -673,10 +646,13 @@ export default function LearnPage() {
         </p>
       </section>
 
+// Confusion Matrix Section
       <section id="viz-matrix" className="mb-8">
         <ConfusionMatrix metrics={metrics} confusion={confusion}></ConfusionMatrix>
       </section>
 
+// Why and What Section
+// Explains the motivation and feature selection rationale
       <section className="grid md:grid-cols-2 gap-6 items-start mb-8">
         <div className="space-y-3">
           <h2 className="text-2xl font-semibold">Why we built this</h2>
@@ -694,18 +670,22 @@ export default function LearnPage() {
         </div>
       </section>
 
+// Feature Importance Section
       <section id="viz-importance" className="mb-8">
         <FeatureImportance data={FEATURE_IMPORTANCES} onFeatureClick={setHighlightFeature} />
       </section>
 
+// Scatter Plot Section
       <section id="viz-scatter" className="mb-8">
         <ScatterPlot data={SCATTER_DATA} highlightFeature={highlightFeature} />
       </section>
 
+// Word Cloud Section
       <section id="viz-wordcloud" className="mb-8">
         <WordCloud />
       </section>
 
+// Future Directions Section
       <section className="space-y-3 mb-8">
         <h2 className="text-2xl font-semibold">Where we're heading</h2>
         <p className="text-gray-700 max-w-3xl">
@@ -715,6 +695,7 @@ export default function LearnPage() {
         </p>
       </section>
 
+// Call to Action Section
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-4">Ready to Try It?</h2>
         <p className="text-muted-foreground mb-6">

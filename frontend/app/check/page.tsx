@@ -11,7 +11,8 @@ import { analyseText} from "@/lib/analyzer"
 import { useAnalysis } from "@/lib/analysis-context"
 import qp from "quoted-printable";
 
-//parse the .eml files to split out the subject and body text to pass into the model.
+// EML File Parser
+// Parses .eml files to extract subject and body text for analysis
 async function parseEmlFile(file: File) {
   const text = await file.text();
 
@@ -70,7 +71,6 @@ async function parseEmlFile(file: File) {
 export default function CheckPage() {
   const router = useRouter()
   const {setResult} = useAnalysis()
-  //const {result} = useAnalysis()
   const [activeTab, setActiveTab] = useState("paste")
   const [bodyInput, setBodyInput] = useState("")
   const [subjectInput, setSubjectInput] = useState("")
@@ -81,6 +81,8 @@ export default function CheckPage() {
 
   const hasInput = (bodyInput.trim().length > 0 && subjectInput.trim().length > 0)|| file !== null
 
+// File Validation Handler
+// Validates file type and size before allowing upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
@@ -118,6 +120,8 @@ export default function CheckPage() {
     }
   }
 
+// Analysis Handler
+// Processes input, calls API, and navigates to results page
   const handleAnalyze = async () => {
     setIsAnalyzing(true)
     setProgress(0)
@@ -126,8 +130,6 @@ export default function CheckPage() {
     let subjectToAnalyse = ""
     let bodyToAnalyse = ""
 
-    //try { ############
-    //#################
     if(activeTab == "paste"){
       subjectToAnalyse = subjectInput
       bodyToAnalyse = bodyInput
@@ -159,19 +161,11 @@ export default function CheckPage() {
         return
       }
       } else {
-      //###################################
       setError("Please upload or paste your email content");
       setIsAnalyzing(false);
       return;
     }
-    /*else {
-      //error - wrong active tab
-      setIsAnalyzing(false)
-      setProgress(0)
-      setError("User is on incorrect tab to submit input.")
-      return
-    }*/
-
+    
     //double check that something has actually been inputted
     if(subjectToAnalyse.trim() == "" || bodyToAnalyse.trim() == ""){
       setIsAnalyzing(false)
@@ -194,10 +188,7 @@ export default function CheckPage() {
         {
           subject: subjectToAnalyse,
           body: bodyToAnalyse
-        }/*, 
-        {
-        headers: { "Content-Type": "application/json" }
-        }*/
+        }
       );
 
       clearInterval(progressInterval)
@@ -207,9 +198,6 @@ export default function CheckPage() {
 
       // Store result and navigate
       setResult(result)
-
-      //used for testing
-      //console.log(result.body)
     }
     catch (err){
       setError(err instanceof Error ? err.message : "Analysis failed")
@@ -239,6 +227,8 @@ export default function CheckPage() {
             <TabsTrigger value="paste">Paste Text</TabsTrigger>
           </TabsList>
 
+// File Upload Feature
+// Allows users to upload .eml or .txt files with drag-and-drop support
           <TabsContent value="upload" className="space-y-4">
             <div
               onDrop={handleDrop}
@@ -280,6 +270,8 @@ export default function CheckPage() {
             )}
           </TabsContent>
 
+// Text Paste Feature
+// Allows users to manually paste email subject and body text for analysis
           <TabsContent value="paste" className="space-y-4">
             <div>
               <label htmlFor="text-input" className="sr-only">
@@ -307,12 +299,16 @@ export default function CheckPage() {
           </TabsContent>
         </Tabs>
 
+// Error Display
+// Shows validation and processing errors to the user
         {error && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800" role="alert">
             {error}
           </div>
         )}
 
+// Analysis Button
+// Triggers the spam analysis process when clicked
         <Button onClick={handleAnalyze} disabled={!hasInput || isAnalyzing} size="lg" className="w-full mt-6">
           {isAnalyzing ? (
             <>
@@ -325,7 +321,8 @@ export default function CheckPage() {
         </Button>
       </Card>
 
-      {/* Loading State */}
+// Progress Indicator
+// Shows analysis progress with animated progress bar and status messages
       {isAnalyzing && (
         <Card className="mt-8 p-8 text-center">
           <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-(--color-primary)" aria-hidden="true" />
