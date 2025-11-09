@@ -15,9 +15,9 @@ class SpamModel:
 
     #should not have to run this unless the data in SpamEmailsScaledAllFeatures.csv is updated
     def train(self):
-        scaledFile = self.root / "data" / "SpamEmailsScaledAllFeatures.csv"
+        scaledFile = self.root / "back-end"/ "data" / "SpamEmailsScaledAllFeatures.csv"
         #need to use unscaled data to fit standard scaler
-        unscaledFile = self.root / "data" / "SpamEmailsAllFeatures.csv"
+        unscaledFile = self.root / "back-end" / "data" / "SpamEmailsAllFeatures.csv"
         #read in processed dataset
         spamDF = pd.read_csv(scaledFile)
         spamUnscaledDF = pd.read_csv(unscaledFile)

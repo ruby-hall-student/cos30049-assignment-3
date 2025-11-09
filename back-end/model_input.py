@@ -1,16 +1,17 @@
 import pandas as pd
 import re
 from spellchecker import SpellChecker
+from pathlib import Path
 
 #a class used to extract features from inputs
 class InputExtractor:
     #set up variables that will be used repeatedly when extracting features
     def __init__(self):
         spamWords = []
-
+        root = Path(__file__).resolve().parent.parent
         #get list of spam words from spamWords.txt
         #this file was made from using frequently used words in spam emails and research
-        with open("../data/spamWords.txt", newline='') as spamWordsFile:
+        with open(root/"back-end"/"data"/"spamWords.txt", newline='') as spamWordsFile:
             for line in spamWordsFile:
                 spamWords += line.split(", ")
 
