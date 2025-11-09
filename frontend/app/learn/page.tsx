@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, ArrowRight } from "lucide-react"
+import axios from "axios"
 
 
 // ============================================================================
@@ -72,16 +73,8 @@ function useResizeObserver(ref: any) {
 // ============================================================================
 
 // Confusion Matrix Chart
-function ConfusionMatrix() {
-  const [metrics, setMetrics] = useState([{metric:"", score:0}])
-
-  useEffect(() => {
-    // Load the CSV
-    
-  }, [])
-
-  //console.log("metrics" + metrics[0].metric + metrics[0].score)
-
+function ConfusionMatrix(metrics: any) {
+  
   // // const data = MATRIX_DATA[modelKey]
   // const containerRef = useRef(null)
   // const svgRef = useRef(null)
@@ -182,6 +175,8 @@ function ConfusionMatrix() {
 
   //const metrics = data.metrics
 
+  console.log(metrics)
+
   return (
     <Card className="w-full">
       <CardContent className="p-4 md:p-6">
@@ -193,7 +188,7 @@ function ConfusionMatrix() {
             </p>
           </div>
         </div>
-        <h1>{metrics[0].score}</h1>
+        <h1>Hi{metrics.accuracy}</h1>
         {/* <div ref={containerRef} className="w-full h-[340px]">
           <svg ref={svgRef} className="w-full h-full" />
         </div>
@@ -547,6 +542,56 @@ export default function LearnPage() {
   const modelKey = "logistic_regression"
   const [highlightFeature, setHighlightFeature] = useState(null)
 
+  const [metrics, setMetrics] = useState({
+    accuracy: 0, 
+    precision: 0, 
+    recall: 0, 
+    f1: 0
+  })
+
+  const[confusion, setConfusion] = useState({
+    tn: 0,
+    fn: 0, 
+    tp: 0, 
+    fp: 0
+  })
+
+  useEffect(() => {
+    handleDisplayMetrics();
+  }, []);
+
+  const handleDisplayMetrics = () => {
+    try {
+      //get the data from the api endpoint /metrics/
+      axios.get("http://localhost:8000/metrics/")
+      .then((response)=>{
+        if(response.status===200){
+          setMetrics(({
+            ...metrics,
+            accuracy: response.data.metrics.Accuracy,
+            precision: response.data.metrics.Precision,
+            recall: response.data.metrics.Recall,
+            f1: response.data.metrics.F1
+          }));
+          // setMetrics({
+          //   accuracy: response.data.metrics.Accuracy, 
+          //   precision: response.data.metrics.Precision,
+          //   recall: response.data.metrics.Recall,
+          //   f1: response.data.metrics.F1
+          // });
+
+          console.log("accuracy" + response.data.metrics.Accuracy);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    }
+    catch(err){
+      console.log(err)
+    }
+  }
+
   //const activeModel = MATRIX_DATA[modelKey]
 
   return (
@@ -651,7 +696,7 @@ export default function LearnPage() {
       </section>
 
       <section id="viz-matrix" className="mb-8">
-        <ConfusionMatrix/>
+        <ConfusionMatrix metrics={metrics}/>
       </section>
 
       <section className="grid md:grid-cols-2 gap-6 items-start mb-8">

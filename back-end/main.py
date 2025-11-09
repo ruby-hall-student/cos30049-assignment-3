@@ -48,6 +48,7 @@ metricsLoader = MetricsLoader()
 async def root():
     return {"message": "Spam and Malware Detectore: predict if an email is spam or ham!"}
 
+#returns data about the logistic regression model used for the site
 @app.get("/metrics/")
 async def retrieve_metrics() -> MetricsOutput:
     try:
