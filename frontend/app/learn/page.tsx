@@ -47,7 +47,7 @@ const SCATTER_DATA = d3.range(1200).map((i) => {
 // ============================================================================
 // UTILITY HOOKS
 // ============================================================================
-function useResizeObserver(ref) {
+function useResizeObserver(ref: any) {
   const [bounds, setBounds] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
@@ -72,7 +72,7 @@ function useResizeObserver(ref) {
 // ============================================================================
 
 // Confusion Matrix Chart
-function ConfusionMatrix({ modelKey }) {
+function ConfusionMatrix({modelKey}) {
   const data = MATRIX_DATA[modelKey]
   const containerRef = useRef(null)
   const svgRef = useRef(null)
@@ -290,7 +290,7 @@ function FeatureImportance({ data, onFeatureClick }) {
           <div>
             <h3 className="text-xl font-semibold">What signals drive the prediction</h3>
             <p className="text-sm text-gray-600">
-              Links, CAPITALS, and suspicious terms are strong indicators. Less useful features are filtered out.
+              Links, capitals, and suspicious terms are strong indicators. Less useful features are filtered out.
             </p>
           </div>
           <div className="flex gap-2">
