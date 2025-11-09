@@ -5,6 +5,7 @@ from model import SpamModel
 from model_input import InputExtractor
 from pydantic import BaseModel, Field
 from logger import logger
+from metrics_loader import MetricsLoader
 
 #defines a pydantic model for input to predict spam
 class PredictionInput(BaseModel):
@@ -19,6 +20,10 @@ class PredictionOutput(BaseModel):
     probability: float = Field(..., ge=0, le=1) #the probability that the email is spam (1.0 = certain it is spam)
     subjectSuspiciousText: list[dict]
     bodySuspiciousText: list[dict]
+
+class MetricsOutput(BaseModel):
+    metrics: dict #includes: accuracy, precision, recall, f1 score
+    confusionMatrix: dict#includes: tp, fp, tn, fn
 
 app = FastAPI()
 
@@ -36,9 +41,26 @@ model = SpamModel()
 #initialise input extractor - this will be used to extract features from email input
 inputExtractor = InputExtractor()
 
+#initialise metrics loader
+metricsLoader = MetricsLoader()
+
 @app.get("/")
 async def root():
-    return {"message": "This is a test message"}
+    return {"message": "Spam and Malware Detectore: predict if an email is spam or ham!"}
+
+@app.get("/metrics/")
+async def retrieve_metrics() -> MetricsOutput:
+    try:
+        metrics = metricsLoader.getMetrics()
+        #used for testing
+        #logger.info(metrics)
+        confusion = metricsLoader.getConfusion()
+        metricsOutput = MetricsOutput(metrics = metrics, confusionMatrix=confusion)
+        return metricsOutput
+    #display any errors that occur
+    except Exception as e:
+        logger.error("Error trying to retrieve metrics data: " + str(e))
+        raise HTTPException(status_code=500, detail="Internal error: " + str(e))
 
 #predict whether an email is spam/ham - input requires subject and body text as string
 #returns predicted email object

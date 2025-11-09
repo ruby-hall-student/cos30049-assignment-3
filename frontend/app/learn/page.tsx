@@ -13,18 +13,18 @@ import { Lightbulb, ArrowRight } from "lucide-react"
 // DATA SECTION
 // ============================================================================
 
-const MATRIX_DATA = {
-  logistic_regression: {
-    name: "Logistic Regression",
-    matrix: { TP: 170, FP: 80, FN: 830, TN: 920 },
-    metrics: {
-      accuracy: (170 + 920) / 2000,
-      precision: 170 / (170 + 80),
-      recall: 170 / (170 + 830),
-      f1: (2 * (170 / (170 + 80)) * (170 / (170 + 830))) / ((170 / (170 + 80)) + (170 / (170 + 830))),
-    },
-  },
-}
+// const MATRIX_DATA = {
+//   logistic_regression: {
+//     name: "Logistic Regression",
+//     matrix: { TP: 170, FP: 80, FN: 830, TN: 920 },
+//     metrics: {
+//       accuracy: (170 + 920) / 2000,
+//       precision: 170 / (170 + 80),
+//       recall: 170 / (170 + 830),
+//       f1: (2 * (170 / (170 + 80)) * (170 / (170 + 830))) / ((170 / (170 + 80)) + (170 / (170 + 830))),
+//     },
+//   },
+// }
 
 const FEATURE_IMPORTANCES = [
   { feature: "URLs", importance: 0.23, hint: "Detected and counted the number of URLs in the emails" },
@@ -72,106 +72,115 @@ function useResizeObserver(ref: any) {
 // ============================================================================
 
 // Confusion Matrix Chart
-function ConfusionMatrix({modelKey}) {
-  const data = MATRIX_DATA[modelKey]
-  const containerRef = useRef(null)
-  const svgRef = useRef(null)
-  const { width } = useResizeObserver(containerRef)
-
-  const grid = useMemo(() => {
-    const { TP, FP, FN, TN } = data.matrix
-    return [
-      { r: 0, c: 0, label: "TP", value: TP, name: "True Positive" },
-      { r: 0, c: 1, label: "FP", value: FP, name: "False Positive" },
-      { r: 1, c: 0, label: "FN", value: FN, name: "False Negative" },
-      { r: 1, c: 1, label: "TN", value: TN, name: "True Negative" },
-    ]
-  }, [data])
+function ConfusionMatrix() {
+  const [metrics, setMetrics] = useState([{metric:"", score:0}])
 
   useEffect(() => {
-    if (!svgRef.current || !width) return
+    // Load the CSV
+    
+  }, [])
 
-    const w = Math.max(320, width)
-    const h = 320
-    const m = { t: 36, r: 16, b: 36, l: 80 }
-    const innerW = w - m.l - m.r
-    const innerH = h - m.t - m.b
+  //console.log("metrics" + metrics[0].metric + metrics[0].score)
 
-    const svg = d3.select(svgRef.current).attr("viewBox", `0 0 ${w} ${h}`)
-    svg.selectAll("*").remove()
+  // // const data = MATRIX_DATA[modelKey]
+  // const containerRef = useRef(null)
+  // const svgRef = useRef(null)
+  // const { width } = useResizeObserver(containerRef)
 
-    const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`)
+  // const grid = useMemo(() => {
+  //   const { TP, FP, FN, TN } = data.matrix
+  //   return [
+  //     { r: 0, c: 0, label: "TP", value: TP, name: "True Positive" },
+  //     { r: 0, c: 1, label: "FP", value: FP, name: "False Positive" },
+  //     { r: 1, c: 0, label: "FN", value: FN, name: "False Negative" },
+  //     { r: 1, c: 1, label: "TN", value: TN, name: "True Negative" },
+  //   ]
+  // }, [data])
 
-    const color = d3
-      .scaleLinear()
-      .domain(d3.extent(grid.map((d) => d.value)))
-      .range(["#eaeaea", "#1f77b4"])
+  // useEffect(() => {
+  //   if (!svgRef.current || !width) return
 
-    const cellW = innerW / 2
-    const cellH = innerH / 2
+  //   const w = Math.max(320, width)
+  //   const h = 320
+  //   const m = { t: 36, r: 16, b: 36, l: 80 }
+  //   const innerW = w - m.l - m.r
+  //   const innerH = h - m.t - m.b
 
-    g.append("text").attr("x", -40).attr("y", -16).attr("class", "text-sm fill-gray-600").text("Actual")
-    g.append("text")
-      .attr("x", innerW / 2)
-      .attr("y", innerH + 28)
-      .attr("text-anchor", "middle")
-      .attr("class", "text-sm fill-gray-600")
-      .text("Predicted")
+  //   const svg = d3.select(svgRef.current).attr("viewBox", `0 0 ${w} ${h}`)
+  //   svg.selectAll("*").remove()
 
-    const cols = ["Spam", "Ham"]
-    cols.forEach((c, i) => {
-      g.append("text")
-        .attr("x", i * cellW + cellW / 2)
-        .attr("y", -4)
-        .attr("text-anchor", "middle")
-        .attr("class", "text-sm font-medium fill-gray-800")
-        .text(c)
-    })
+  //   const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`)
 
-    const rows = ["Spam", "Ham"]
-    rows.forEach((r, i) => {
-      g.append("text")
-        .attr("x", -8)
-        .attr("y", i * cellH + cellH / 2)
-        .attr("dy", "0.35em")
-        .attr("text-anchor", "end")
-        .attr("class", "text-sm font-medium fill-gray-800")
-        .text(r)
-    })
+  //   const color = d3
+  //     .scaleLinear()
+  //     .domain(d3.extent(grid.map((d) => d.value)))
+  //     .range(["#eaeaea", "#1f77b4"])
 
-    const cells = g
-      .selectAll("g.cell")
-      .data(grid)
-      .join((enter) => enter.append("g").attr("class", "cell"))
-      .attr("transform", (d) => `translate(${d.c * cellW},${d.r * cellH})`)
+  //   const cellW = innerW / 2
+  //   const cellH = innerH / 2
 
-    cells
-      .append("rect")
-      .attr("width", cellW - 4)
-      .attr("height", cellH - 4)
-      .attr("rx", 12)
-      .attr("x", 2)
-      .attr("y", 2)
-      .attr("fill", (d) => color(d.value))
+  //   g.append("text").attr("x", -40).attr("y", -16).attr("class", "text-sm fill-gray-600").text("Actual")
+  //   g.append("text")
+  //     .attr("x", innerW / 2)
+  //     .attr("y", innerH + 28)
+  //     .attr("text-anchor", "middle")
+  //     .attr("class", "text-sm fill-gray-600")
+  //     .text("Predicted")
 
-    cells
-      .append("text")
-      .attr("x", cellW / 2)
-      .attr("y", cellH / 2 - 6)
-      .attr("text-anchor", "middle")
-      .attr("class", "text-lg font-semibold fill-white")
-      .text((d) => d.label)
+  //   const cols = ["Spam", "Ham"]
+  //   cols.forEach((c, i) => {
+  //     g.append("text")
+  //       .attr("x", i * cellW + cellW / 2)
+  //       .attr("y", -4)
+  //       .attr("text-anchor", "middle")
+  //       .attr("class", "text-sm font-medium fill-gray-800")
+  //       .text(c)
+  //   })
 
-    cells
-      .append("text")
-      .attr("x", cellW / 2)
-      .attr("y", cellH / 2 + 18)
-      .attr("text-anchor", "middle")
-      .attr("class", "text-sm font-medium fill-white")
-      .text((d) => d.value.toLocaleString())
-  }, [grid, width])
+  //   const rows = ["Spam", "Ham"]
+  //   rows.forEach((r, i) => {
+  //     g.append("text")
+  //       .attr("x", -8)
+  //       .attr("y", i * cellH + cellH / 2)
+  //       .attr("dy", "0.35em")
+  //       .attr("text-anchor", "end")
+  //       .attr("class", "text-sm font-medium fill-gray-800")
+  //       .text(r)
+  //   })
 
-  const metrics = data.metrics
+  //   const cells = g
+  //     .selectAll("g.cell")
+  //     .data(grid)
+  //     .join((enter) => enter.append("g").attr("class", "cell"))
+  //     .attr("transform", (d) => `translate(${d.c * cellW},${d.r * cellH})`)
+
+  //   cells
+  //     .append("rect")
+  //     .attr("width", cellW - 4)
+  //     .attr("height", cellH - 4)
+  //     .attr("rx", 12)
+  //     .attr("x", 2)
+  //     .attr("y", 2)
+  //     .attr("fill", (d) => color(d.value))
+
+  //   cells
+  //     .append("text")
+  //     .attr("x", cellW / 2)
+  //     .attr("y", cellH / 2 - 6)
+  //     .attr("text-anchor", "middle")
+  //     .attr("class", "text-lg font-semibold fill-white")
+  //     .text((d) => d.label)
+
+  //   cells
+  //     .append("text")
+  //     .attr("x", cellW / 2)
+  //     .attr("y", cellH / 2 + 18)
+  //     .attr("text-anchor", "middle")
+  //     .attr("class", "text-sm font-medium fill-white")
+  //     .text((d) => d.value.toLocaleString())
+  // }, [grid, width])
+
+  //const metrics = data.metrics
 
   return (
     <Card className="w-full">
@@ -184,7 +193,8 @@ function ConfusionMatrix({modelKey}) {
             </p>
           </div>
         </div>
-        <div ref={containerRef} className="w-full h-[340px]">
+        <h1>{metrics[0].score}</h1>
+        {/* <div ref={containerRef} className="w-full h-[340px]">
           <svg ref={svgRef} className="w-full h-full" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
@@ -207,7 +217,7 @@ function ConfusionMatrix({modelKey}) {
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   )
@@ -537,7 +547,7 @@ export default function LearnPage() {
   const modelKey = "logistic_regression"
   const [highlightFeature, setHighlightFeature] = useState(null)
 
-  const activeModel = MATRIX_DATA[modelKey]
+  //const activeModel = MATRIX_DATA[modelKey]
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -617,7 +627,7 @@ export default function LearnPage() {
           <span className="font-semibold">how accurate</span> it is and <span className="font-semibold">what signals</span>{" "}
           it uses.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Accuracy", v: activeModel.metrics.accuracy },
             { label: "Precision", v: activeModel.metrics.precision },
@@ -637,11 +647,11 @@ export default function LearnPage() {
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
       </section>
 
       <section id="viz-matrix" className="mb-8">
-        <ConfusionMatrix modelKey={modelKey} />
+        <ConfusionMatrix/>
       </section>
 
       <section className="grid md:grid-cols-2 gap-6 items-start mb-8">
