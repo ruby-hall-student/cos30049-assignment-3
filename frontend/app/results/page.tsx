@@ -70,7 +70,7 @@ export default function ResultsPage() {
                 <h1 className="text-3xl font-bold text-center">Result: {result.label? "Spam" : "Not Spam"}</h1>
               </div>
               <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-1xl font-regular">Risk Percentage: {result.probability * 100}%</h2>
+                <h2 className="text-1xl font-regular">Risk Percentage: {(result.probability * 100).toFixed(1)}%</h2>
                 <Badge className={`${config.color} ${config.bg} border ${config.border}`}>
                   {result.riskLevel.toUpperCase()}
                 </Badge>
