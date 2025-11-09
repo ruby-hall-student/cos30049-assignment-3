@@ -50,6 +50,14 @@ Start the production server:
 npm start
 ```
 
+## Start Backend
+
+Start running the application's back-end
+
+```bash
+uvicorn main:app --reload
+```
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
@@ -59,10 +67,12 @@ npm start
 
 ## Project Structure
 
-- `app/` - Next.js app directory with pages and components
-- `components/` - Reusable UI components
-- `lib/` - Utility functions and analysis logic
-- `public/` - Static assets
+- `frontend/` - Stores the scripts for the front end
+    - `app/` - Next.js app directory with pages and components
+    - `components/` - Reusable UI components
+    - `lib/` - Utility functions and analysis logic
+    - `public/` - Static assets
+- `back-end/` - Stores the scripts for the back end
 
 ## Features
 
